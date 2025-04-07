@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Charger l'utilisateur à partir du localStorage au démarrage
+  // Load user from localStorage on startup
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("token");
@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // Fonction de connexion
+  // Login function
   const login = async (username, password) => {
     setLoading(true);
     setError(null);
@@ -49,13 +49,13 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
       return userData;
     } catch (err) {
-      setError(err.response?.data?.message || "Une erreur est survenue");
+      setError(err.response?.data?.message || "An error occurred");
       setLoading(false);
       throw err;
     }
   };
 
-  // Fonction d'inscription
+  // Register function
   const register = async (userData) => {
     setLoading(true);
     setError(null);
@@ -78,13 +78,13 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
       return user;
     } catch (err) {
-      setError(err.response?.data?.message || "Une erreur est survenue");
+      setError(err.response?.data?.message || "An error occurred");
       setLoading(false);
       throw err;
     }
   };
 
-  // Fonction de déconnexion
+  // Logout function
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }) => {
     delete axios.defaults.headers.common["Authorization"];
   };
 
-  // Fonction pour récupérer le profil utilisateur
+  // Get user profile
   const getUserProfile = async () => {
     try {
       const response = await axios.get(

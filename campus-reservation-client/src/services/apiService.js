@@ -2,12 +2,12 @@ import axios from "axios";
 
 const API_URL = "http://localhost:5000/api";
 
-// Configure axios avec l'URL de base
+// Configure axios with base URL
 const api = axios.create({
   baseURL: API_URL,
 });
 
-// Intercepteur pour ajouter le token d'authentification
+// Interceptor to add authentication token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -21,9 +21,9 @@ api.interceptors.request.use(
   }
 );
 
-// Service pour les opérations liées aux étages et salles
+// Floor and room related operations
 export const floorService = {
-  // Récupérer tous les étages
+  // Get all floors
   getAllFloors: async () => {
     try {
       const response = await api.get("/floors");
@@ -33,7 +33,7 @@ export const floorService = {
     }
   },
 
-  // Récupérer un étage par son numéro
+  // Get a floor by number
   getFloorByNumber: async (floorNumber) => {
     try {
       const response = await api.get(`/floors/${floorNumber}`);
@@ -43,7 +43,7 @@ export const floorService = {
     }
   },
 
-  // Récupérer les salles d'un étage avec leur statut
+  // Get rooms for a floor with their status
   getRoomsByFloor: async (floorNumber) => {
     try {
       const response = await api.get(`/floors/${floorNumber}/rooms`);
@@ -53,7 +53,7 @@ export const floorService = {
     }
   },
 
-  // Mettre à jour un étage (admin)
+  // Update a floor (admin)
   updateFloor: async (floorNumber, floorData) => {
     try {
       const response = await api.put(`/floors/${floorNumber}`, floorData);
@@ -63,7 +63,7 @@ export const floorService = {
     }
   },
 
-  // Ajouter un élément à un étage (admin)
+  // Add an element to a floor (admin)
   addElementToFloor: async (floorNumber, elementData) => {
     try {
       const response = await api.post(
@@ -76,7 +76,7 @@ export const floorService = {
     }
   },
 
-  // Mettre à jour un élément (admin)
+  // Update an element (admin)
   updateElement: async (floorNumber, elementId, elementData) => {
     try {
       const response = await api.put(
@@ -89,7 +89,7 @@ export const floorService = {
     }
   },
 
-  // Supprimer un élément (admin)
+  // Delete an element (admin)
   deleteElement: async (floorNumber, elementId) => {
     try {
       const response = await api.delete(
@@ -102,9 +102,9 @@ export const floorService = {
   },
 };
 
-// Service pour les opérations liées aux réservations
+// Reservation related operations
 export const reservationService = {
-  // Créer une nouvelle réservation
+  // Create a new reservation
   createReservation: async (reservationData) => {
     try {
       const response = await api.post("/reservations", reservationData);
@@ -114,7 +114,7 @@ export const reservationService = {
     }
   },
 
-  // Récupérer toutes les réservations (admin/professeur)
+  // Get all reservations (admin/teacher)
   getAllReservations: async (filters = {}) => {
     try {
       const response = await api.get("/reservations", { params: filters });
@@ -124,7 +124,7 @@ export const reservationService = {
     }
   },
 
-  // Récupérer mes réservations
+  // Get my reservations
   getMyReservations: async () => {
     try {
       const response = await api.get("/reservations/my");
@@ -134,7 +134,7 @@ export const reservationService = {
     }
   },
 
-  // Récupérer une réservation par son ID
+  // Get a reservation by ID
   getReservationById: async (id) => {
     try {
       const response = await api.get(`/reservations/${id}`);
@@ -144,7 +144,7 @@ export const reservationService = {
     }
   },
 
-  // Mettre à jour une réservation
+  // Update a reservation
   updateReservation: async (id, reservationData) => {
     try {
       const response = await api.put(`/reservations/${id}`, reservationData);
@@ -154,7 +154,7 @@ export const reservationService = {
     }
   },
 
-  // Supprimer une réservation
+  // Delete a reservation
   deleteReservation: async (id) => {
     try {
       const response = await api.delete(`/reservations/${id}`);

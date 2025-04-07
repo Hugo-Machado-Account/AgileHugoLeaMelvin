@@ -5,9 +5,12 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+
+// Custom theme
+import customTheme from "./theme/customTheme";
 
 // Components
 import Navbar from "./components/layout/Navbar";
@@ -48,24 +51,9 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
-// Create theme
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#2196f3",
-    },
-    secondary: {
-      main: "#ff5722",
-    },
-  },
-  typography: {
-    fontFamily: "Roboto, Arial, sans-serif",
-  },
-});
-
 function App() {
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={customTheme}>
       <CssBaseline />
       <AuthProvider>
         <Router>
