@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Paper,
   Tabs,
@@ -36,6 +36,11 @@ const ProfileTabs = ({
 }) => {
   const [activeTab, setActiveTab] = useState(PROFILE_TABS.STATS);
 
+  // Debug: Log du changement de couleur
+  useEffect(() => {
+    console.log('🎨 ProfileTabs - Couleur reçue:', profileData?.preferredColor);
+  }, [profileData?.preferredColor]);
+
   // Gérer le changement d'onglet
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -60,12 +65,20 @@ const ProfileTabs = ({
     setActiveTab(PROFILE_TABS.EDIT);
   };
 
+  // S'assurer qu'on a des données de profil valides
+  if (!profileData || !profileData.preferredColor) {
+    console.warn('⚠️ ProfileTabs - Données de profil manquantes:', profileData);
+    return null;
+  }
+
+  const currentColor = profileData.preferredColor;
+
   return (
     <Paper
       elevation={3}
       sx={{
         p: 3,
-        borderTop: `4px solid ${profileData.preferredColor}`,
+        borderTop: `4px solid ${currentColor}`,
         transition: "all 0.3s ease-in-out",
         position: 'relative',
         overflow: 'hidden',
@@ -76,7 +89,7 @@ const ProfileTabs = ({
           left: 0,
           right: 0,
           height: '4px',
-          background: `linear-gradient(90deg, ${profileData.preferredColor}, ${profileData.preferredColor}aa, ${profileData.preferredColor})`,
+          background: `linear-gradient(90deg, ${currentColor}, ${currentColor}aa, ${currentColor})`,
           transition: 'all 0.3s ease-in-out',
         }
       }}
@@ -93,14 +106,14 @@ const ProfileTabs = ({
           '& .MuiTab-root': {
             transition: 'all 0.3s ease-in-out',
             '&:hover': {
-              color: profileData.preferredColor,
+              color: currentColor,
             }
           },
           '& .Mui-selected': {
-            color: `${profileData.preferredColor} !important`,
+            color: `${currentColor} !important`,
           },
           '& .MuiTabs-indicator': {
-            backgroundColor: profileData.preferredColor,
+            backgroundColor: currentColor,
             height: 3,
             transition: 'all 0.3s ease-in-out',
           },
@@ -108,7 +121,7 @@ const ProfileTabs = ({
             transition: 'all 0.3s ease-in-out',
           },
           '& .Mui-selected .MuiSvgIcon-root': {
-            color: profileData.preferredColor,
+            color: currentColor,
           }
         }}
       >
@@ -179,4 +192,4 @@ const ProfileTabs = ({
   );
 };
 
-export default ProfileTabs; 
+export default ProfileTabs;

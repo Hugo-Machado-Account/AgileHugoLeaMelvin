@@ -25,6 +25,7 @@ import {
   Palette as PaletteIcon,
 } from '@mui/icons-material';
 import { PROFILE_COLORS, COLOR_NAMES } from '../../utils/profileConstants';
+import ColorTestPanel from './ColorTestPanel';
 
 const SettingsPanel = ({ 
   profileData, 
@@ -45,6 +46,12 @@ const SettingsPanel = ({
       <Typography variant="h6" gutterBottom>
         Paramètres
       </Typography>
+
+      {/* Composant de test temporaire */}
+      <ColorTestPanel 
+        profileData={profileData}
+        onColorChange={onColorChange}
+      />
 
       {/* Personnalisation */}
       <Card sx={{ mb: 3 }}>

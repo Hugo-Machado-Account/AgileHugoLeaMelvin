@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Container,
   Grid,
@@ -45,8 +45,17 @@ const Profile = () => {
     setShowPasswordForm,
   } = useProfileEdit(profileData, showSuccess, showError);
 
+  // Debug: Log des données de profil dans le composant principal
+  useEffect(() => {
+    console.log('🏠 Profile.js - ProfileData mis à jour:', {
+      preferredColor: profileData?.preferredColor,
+      fullData: profileData
+    });
+  }, [profileData]);
+
   // Gérer les changements dans le formulaire
   const handleProfileChange = (updates) => {
+    console.log('🔄 Profile.js - handleProfileChange appelé avec:', updates);
     updateProfileData(updates);
   };
 
@@ -63,6 +72,18 @@ const Profile = () => {
         <CircularProgress />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Chargement du profil...
+        </Typography>
+      </Container>
+    );
+  }
+
+  // Vérifications de sécurité
+  if (!profileData) {
+    console.error('❌ Profile.js - Pas de données de profil !');
+    return (
+      <Container sx={{ py: 5, textAlign: "center" }}>
+        <Typography variant="h6" color="error">
+          Erreur: Impossible de charger les données du profil
         </Typography>
       </Container>
     );

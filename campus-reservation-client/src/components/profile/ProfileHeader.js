@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Paper,
   Typography,
@@ -42,6 +42,19 @@ const ProfileHeader = ({
     PROFILE_COLORS[Math.floor(Math.random() * PROFILE_COLORS.length)]
   );
 
+  // Debug: Log du changement de couleur
+  useEffect(() => {
+    console.log('🎨 ProfileHeader - Couleur reçue:', profileData?.preferredColor);
+  }, [profileData?.preferredColor]);
+
+  // S'assurer qu'on a des données valides
+  if (!profileData) {
+    console.warn('⚠️ ProfileHeader - Pas de données de profil');
+    return null;
+  }
+
+  const currentColor = profileData.preferredColor || PROFILE_COLORS[0];
+
   return (
     <Paper
       elevation={3}
@@ -50,7 +63,7 @@ const ProfileHeader = ({
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        borderTop: `4px solid ${profileData.preferredColor}`,
+        borderTop: `4px solid ${currentColor}`,
         transition: "all 0.3s ease-in-out",
         position: 'relative',
         overflow: 'hidden',
@@ -61,7 +74,7 @@ const ProfileHeader = ({
           left: 0,
           right: 0,
           height: '4px',
-          background: `linear-gradient(90deg, ${profileData.preferredColor}, ${profileData.preferredColor}cc)`,
+          background: `linear-gradient(90deg, ${currentColor}, ${currentColor}cc)`,
           transition: 'all 0.3s ease-in-out',
         }
       }}
@@ -86,20 +99,20 @@ const ProfileHeader = ({
                   width: 36,
                   height: 36,
                   boxShadow: 1,
-                  border: `2px solid ${profileData.preferredColor}`,
+                  border: `2px solid ${currentColor}`,
                   transition: "all 0.3s ease-in-out",
                   '&:hover': {
-                    borderColor: profileData.preferredColor,
-                    boxShadow: `0 0 0 2px ${profileData.preferredColor}44`,
+                    borderColor: currentColor,
+                    boxShadow: `0 0 0 2px ${currentColor}44`,
                   }
                 }}
                 onClick={onPhotoUpload}
                 disabled={uploadingPhoto}
               >
                 {uploadingPhoto ? (
-                  <CircularProgress size={24} sx={{ color: profileData.preferredColor }} />
+                  <CircularProgress size={24} sx={{ color: currentColor }} />
                 ) : (
-                  <PhotoCameraIcon fontSize="small" sx={{ color: profileData.preferredColor }} />
+                  <PhotoCameraIcon fontSize="small" sx={{ color: currentColor }} />
                 )}
               </IconButton>
             </Tooltip>
@@ -124,7 +137,7 @@ const ProfileHeader = ({
                 left: -4,
                 right: -4,
                 bottom: -4,
-                border: `2px solid ${profileData.preferredColor}`,
+                border: `2px solid ${currentColor}`,
                 borderRadius: '50%',
                 transition: 'all 0.3s ease-in-out',
               }
@@ -152,7 +165,7 @@ const ProfileHeader = ({
             mb: 1,
             transition: "all 0.3s ease-in-out",
             ...(profileData.role !== "admin" && profileData.role !== "teacher" && {
-              bgcolor: profileData.preferredColor,
+              bgcolor: currentColor,
               color: 'white',
               '& .MuiChip-label': {
                 fontWeight: 'bold'
@@ -179,7 +192,7 @@ const ProfileHeader = ({
           bgcolor: theme.palette.background.default,
           borderRadius: 1,
           p: 2,
-          border: `1px solid ${profileData.preferredColor}22`,
+          border: `1px solid ${currentColor}22`,
           transition: "all 0.3s ease-in-out",
         }}
       >
@@ -209,9 +222,9 @@ const ProfileHeader = ({
             height: 8, 
             borderRadius: 1, 
             mb: 1,
-            bgcolor: `${profileData.preferredColor}22`,
+            bgcolor: `${currentColor}22`,
             '& .MuiLinearProgress-bar': {
-              bgcolor: profileData.preferredColor,
+              bgcolor: currentColor,
               transition: 'all 0.3s ease-in-out',
             },
             transition: 'all 0.3s ease-in-out',
@@ -234,7 +247,7 @@ const ProfileHeader = ({
         <List dense>
           <ListItem>
             <ListItemIcon>
-              <EmailIcon fontSize="small" sx={{ color: profileData.preferredColor }} />
+              <EmailIcon fontSize="small" sx={{ color: currentColor }} />
             </ListItemIcon>
             <ListItemText
               primary="Email"
@@ -244,7 +257,7 @@ const ProfileHeader = ({
           </ListItem>
           <ListItem>
             <ListItemIcon>
-              <BadgeIcon fontSize="small" sx={{ color: profileData.preferredColor }} />
+              <BadgeIcon fontSize="small" sx={{ color: currentColor }} />
             </ListItemIcon>
             <ListItemText
               primary="Nom d'utilisateur"
@@ -255,7 +268,7 @@ const ProfileHeader = ({
           {user?.createdAt && (
             <ListItem>
               <ListItemIcon>
-                <CalendarTodayIcon fontSize="small" sx={{ color: profileData.preferredColor }} />
+                <CalendarTodayIcon fontSize="small" sx={{ color: currentColor }} />
               </ListItemIcon>
               <ListItemText
                 primary="Membre depuis"
@@ -276,16 +289,16 @@ const ProfileHeader = ({
           onClick={onEditMode}
           disabled={editMode}
           sx={{
-            borderColor: profileData.preferredColor,
-            color: profileData.preferredColor,
+            borderColor: currentColor,
+            color: currentColor,
             transition: "all 0.3s ease-in-out",
             '&:hover': {
-              borderColor: profileData.preferredColor,
-              bgcolor: `${profileData.preferredColor}11`,
+              borderColor: currentColor,
+              bgcolor: `${currentColor}11`,
             },
             '&.Mui-disabled': {
-              borderColor: `${profileData.preferredColor}44`,
-              color: `${profileData.preferredColor}44`,
+              borderColor: `${currentColor}44`,
+              color: `${currentColor}44`,
             }
           }}
         >
