@@ -1,52 +1,50 @@
-const User = require("../models/User");
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-// Générer un token JWT
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: "24h",
-  });
-};
-
-// @desc    Inscrire un nouvel utilisateur
+// @desc    Enregistrer un nouvel utilisateur
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res) => {
   try {
-    const { username, email, password, firstName, lastName, role, department } =
-      req.body;
+    const { username, email, password, firstName, lastName, role, department } = req.body;
 
     // Vérifier si l'utilisateur existe déjà
-    const userExists = await User.findOne({ $or: [{ email }, { username }] });
-
-    if (userExists) {
-      return res.status(400).json({ message: "Cet utilisateur existe déjà" });
+    const existingUser = await User.findByUsername(username);
+    if (existingUser) {
+      return res.status(400).json({ message: "Ce nom d'utilisateur est déjà pris" });
     }
 
-    // Créer l'utilisateur
+    const existingEmail = await User.findByEmail(email);
+    if (existingEmail) {
+      return res.status(400).json({ message: "Cet email est déjà utilisé" });
+    }
+
+    // Créer le nouvel utilisateur
     const user = await User.create({
       username,
       email,
       password,
       firstName,
       lastName,
-      role: role || "student",
-      department,
+      role: role || 'student',
+      department
     });
 
-    if (user) {
-      res.status(201).json({
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        token: generateToken(user._id),
-      });
-    } else {
-      res.status(400).json({ message: "Données utilisateur invalides" });
-    }
+    // Générer le token
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+      expiresIn: '30d'
+    });
+
+    res.status(201).json({
+      _id: user.id,
+      username: user.username,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      department: user.department,
+      token
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -60,35 +58,34 @@ const loginUser = async (req, res) => {
     const { username, password } = req.body;
 
     // Vérifier si l'utilisateur existe
-    const user = await User.findOne({ username });
-
+    const user = await User.findByUsername(username);
     if (!user) {
-      return res
-        .status(401)
-        .json({ message: "Nom d'utilisateur ou mot de passe incorrect" });
+      return res.status(401).json({ message: "Nom d'utilisateur ou mot de passe incorrect" });
     }
 
     // Vérifier si le mot de passe est correct
-    const isMatch = await user.comparePassword(password);
-
+    const isMatch = await User.comparePassword(user.id, password);
     if (!isMatch) {
-      return res
-        .status(401)
-        .json({ message: "Nom d'utilisateur ou mot de passe incorrect" });
+      return res.status(401).json({ message: "Nom d'utilisateur ou mot de passe incorrect" });
     }
 
     // Mettre à jour la date de dernière connexion
-    user.lastLogin = Date.now();
-    await user.save();
+    await User.updateLastLogin(user.id);
+
+    // Générer le token
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+      expiresIn: '30d'
+    });
 
     res.json({
-      _id: user._id,
+      _id: user.id,
       username: user.username,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
-      token: generateToken(user._id),
+      department: user.department,
+      token
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -100,13 +97,20 @@ const loginUser = async (req, res) => {
 // @access  Private
 const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select("-password");
-
-    if (user) {
-      res.json(user);
-    } else {
-      res.status(404).json({ message: "Utilisateur non trouvé" });
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
+
+    res.json({
+      _id: user.id,
+      username: user.username,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      department: user.department
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

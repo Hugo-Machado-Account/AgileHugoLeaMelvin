@@ -30,6 +30,7 @@ import {
 } from "@mui/icons-material";
 import { floorService } from "../services/apiService";
 import RoomCard from "../components/floor/RoomCard";
+import RoomCreation from '../components/admin/RoomCreation';
 
 const FloorMap = () => {
   const { floorNumber } = useParams();
@@ -41,6 +42,7 @@ const FloorMap = () => {
   const [error, setError] = useState(null);
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
   const [filter, setFilter] = useState("all");
+  const [openRoomDialog, setOpenRoomDialog] = useState(false);
 
   // Fetch floor data
   useEffect(() => {
@@ -123,6 +125,19 @@ const FloorMap = () => {
     { key: "medium", label: "Moyennes (21-50)", count: rooms.filter(r => r.capacity > 20 && r.capacity <= 50).length },
     { key: "large", label: "Grandes (> 50)", count: rooms.filter(r => r.capacity > 50).length },
   ];
+
+  // Ajout d'une salle
+  const handleCreateRoom = async (roomData) => {
+    try {
+      await floorService.addElementToFloor(floorNumber, roomData);
+      // Refresh rooms
+      const roomsData = await floorService.getRoomsByFloor(floorNumber);
+      setRooms(roomsData.filter((element) => element.type === "room"));
+      setOpenRoomDialog(false);
+    } catch (err) {
+      setError(err.message || "Erreur lors de la création de la salle");
+    }
+  };
 
   if (loading) {
     return (
@@ -458,6 +473,13 @@ const FloorMap = () => {
             )}
           </Box>
         </Fade>
+
+        <RoomCreation
+          open={openRoomDialog}
+          onClose={() => setOpenRoomDialog(false)}
+          onSubmit={handleCreateRoom}
+          floorNumber={parseInt(floorNumber)}
+        />
       </Container>
     </Box>
   );

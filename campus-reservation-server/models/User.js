@@ -1,64 +1,45 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const BaseModel = require('./BaseModel');
+const bcrypt = require('bcrypt');
 
-const userSchema = new mongoose.Schema(
-  {
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    firstName: {
-      type: String,
-      required: true,
-    },
-    lastName: {
-      type: String,
-      required: true,
-    },
-    role: {
-      type: String,
-      enum: ["student", "teacher", "admin"],
-      default: "student",
-    },
-    department: String,
-    profilePicture: String,
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-    lastLogin: Date,
-  },
-  {
-    timestamps: true,
+class User extends BaseModel {
+  constructor() {
+    super('users');
   }
-);
 
-// Pré-hook pour hacher le mot de passe avant de sauvegarder
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-
-  try {
+  async create(userData) {
+    // Hacher le mot de passe avant de sauvegarder
     const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
+    const hashedPassword = await bcrypt.hash(userData.password, salt);
+
+    const user = {
+      ...userData,
+      password: hashedPassword,
+      isActive: true,
+      lastLogin: null
+    };
+
+    return super.create(user);
   }
-});
 
-// Méthode pour comparer les mots de passe
-userSchema.methods.comparePassword = async function (candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
-};
+  async findByUsername(username) {
+    const users = await this.findByField('username', username);
+    return users[0] || null;
+  }
 
-module.exports = mongoose.model("User", userSchema);
+  async findByEmail(email) {
+    const users = await this.findByField('email', email);
+    return users[0] || null;
+  }
+
+  async comparePassword(userId, candidatePassword) {
+    const user = await this.findById(userId);
+    if (!user) return false;
+    return bcrypt.compare(candidatePassword, user.password);
+  }
+
+  async updateLastLogin(userId) {
+    return this.update(userId, { lastLogin: new Date() });
+  }
+}
+
+module.exports = new User();

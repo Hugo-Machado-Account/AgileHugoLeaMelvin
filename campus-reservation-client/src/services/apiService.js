@@ -76,6 +76,16 @@ export const floorService = {
     }
   },
 
+  // Créer un étage (admin)
+  createFloor: async (floorData) => {
+    try {
+      const response = await api.post('/floors', floorData);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   // Update an element (admin)
   updateElement: async (floorNumber, elementId, elementData) => {
     try {

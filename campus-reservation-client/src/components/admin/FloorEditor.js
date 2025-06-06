@@ -47,6 +47,7 @@ import {
   Save as SaveIcon,
 } from "@mui/icons-material";
 import { floorService } from "../../services/apiService";
+import RoomCreation from "./RoomCreation";
 
 const FloorEditor = () => {
   const [loading, setLoading] = useState(true);
@@ -56,6 +57,7 @@ const FloorEditor = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogType, setDialogType] = useState("");
   const [tabValue, setTabValue] = useState(0);
+  const [openRoomDialog, setOpenRoomDialog] = useState(false);
 
   // Formulaire pour ajouter/modifier un étage
   const [floorForm, setFloorForm] = useState({
@@ -299,6 +301,22 @@ const FloorEditor = () => {
     setSelectedElement(newElement);
   };
 
+  // Handle room creation
+  const handleCreateRoom = async (roomData) => {
+    try {
+      setLoading(true);
+      await floorService.addElementToFloor(selectedFloor.floorNumber, roomData);
+      // Refresh floor data
+      const updatedFloor = await floorService.getFloorByNumber(selectedFloor.floorNumber);
+      setSelectedFloor(updatedFloor);
+      setEditorElements(updatedFloor.elements || []);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message || "Une erreur est survenue lors de la création de la salle");
+      setLoading(false);
+    }
+  };
+
   // Gérer le rendu des différents onglets
   const renderTabContent = () => {
     switch (tabValue) {
@@ -376,7 +394,7 @@ const FloorEditor = () => {
             <Button
               size="small"
               startIcon={<AddIcon />}
-              onClick={() => handleAddElement("room")}
+              onClick={() => setOpenRoomDialog(true)}
               sx={{ mr: 1 }}
             >
               Ajouter une salle
@@ -696,6 +714,14 @@ const FloorEditor = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Add Room Creation Dialog */}
+      <RoomCreation
+        open={openRoomDialog}
+        onClose={() => setOpenRoomDialog(false)}
+        onSubmit={handleCreateRoom}
+        floorNumber={selectedFloor?.floorNumber}
+      />
     </Box>
   );
 };

@@ -30,6 +30,12 @@ import {
 } from "@mui/icons-material";
 import { useAuth } from "../contexts/AuthContext";
 import { floorService, reservationService } from "../services/apiService";
+import RoomCreation from '../components/admin/RoomCreation';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -38,6 +44,11 @@ const Dashboard = () => {
   const [upcomingReservations, setUpcomingReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [openRoomDialog, setOpenRoomDialog] = useState(false);
+  const [openFloorDialog, setOpenFloorDialog] = useState(false);
+  const [floorForm, setFloorForm] = useState({ floorNumber: '', name: '' });
+  const [creatingRoomAfterFloor, setCreatingRoomAfterFloor] = useState(false);
+  const [selectedFloorForRoom, setSelectedFloorForRoom] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -108,6 +119,44 @@ const Dashboard = () => {
       color: "#dc2626",
     },
   ];
+
+  // Ajout d'un étage
+  const handleAddFloor = async () => {
+    if (!floorForm.floorNumber || !floorForm.name) return;
+    try {
+      await floorService.createFloor({
+        floorNumber: parseInt(floorForm.floorNumber),
+        name: floorForm.name,
+        elements: []
+      });
+      // Refresh floors
+      const floorsData = await floorService.getAllFloors();
+      setFloors(floorsData);
+      setOpenFloorDialog(false);
+      setFloorForm({ floorNumber: '', name: '' });
+      if (creatingRoomAfterFloor) {
+        setSelectedFloorForRoom(floorsData.find(f => f.floorNumber === parseInt(floorForm.floorNumber)));
+        setOpenRoomDialog(true);
+        setCreatingRoomAfterFloor(false);
+      }
+    } catch (err) {
+      setError(err.message || "Erreur lors de la création de l'étage");
+    }
+  };
+
+  // Ajout d'une salle
+  const handleCreateRoom = async (roomData) => {
+    try {
+      await floorService.addElementToFloor(roomData.floorNumber, roomData);
+      // Refresh floors
+      const floorsData = await floorService.getAllFloors();
+      setFloors(floorsData);
+      setOpenRoomDialog(false);
+      setSelectedFloorForRoom(null);
+    } catch (err) {
+      setError(err.message || "Erreur lors de la création de la salle");
+    }
+  };
 
   if (loading) {
     return (
@@ -257,24 +306,50 @@ const Dashboard = () => {
                     Étages et Salles
                   </Typography>
                 </Box>
-                <Button
-                  variant="outlined"
-                  onClick={() => navigate("/my-reservations")}
-                  endIcon={<ArrowForwardIcon />}
-                  sx={{
-                    borderColor: "#3730a3",
-                    color: "#3730a3",
-                    textTransform: "none",
-                    fontWeight: 500,
-                    borderRadius: 2,
-                    "&:hover": {
-                      borderColor: "#1e40af",
-                      backgroundColor: "#3730a308",
-                    },
-                  }}
-                >
-                  Mes réservations
-                </Button>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => navigate("/my-reservations")}
+                    endIcon={<ArrowForwardIcon />}
+                    sx={{
+                      borderColor: "#3730a3",
+                      color: "#3730a3",
+                      textTransform: "none",
+                      fontWeight: 500,
+                      borderRadius: 2,
+                      "&:hover": {
+                        borderColor: "#1e40af",
+                        backgroundColor: "#3730a308",
+                      },
+                    }}
+                  >
+                    Mes réservations
+                  </Button>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      backgroundColor: "#3730a3",
+                      color: "white",
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontWeight: 500,
+                      boxShadow: "0 4px 20px rgba(55,48,163,0.08)",
+                      "&:hover": {
+                        backgroundColor: "#1e40af",
+                      },
+                    }}
+                    onClick={() => {
+                      if (floors.length === 0) {
+                        setOpenFloorDialog(true);
+                        setCreatingRoomAfterFloor(true);
+                      } else {
+                        setOpenRoomDialog(true);
+                      }
+                    }}
+                  >
+                    Nouvelle salle
+                  </Button>
+                </Box>
               </Box>
 
               <Grid container spacing={3}>
@@ -349,6 +424,39 @@ const Dashboard = () => {
                   </Grid>
                 )}
               </Grid>
+              {/* Dialog de création d'étage */}
+              <Dialog open={openFloorDialog} onClose={() => setOpenFloorDialog(false)}>
+                <DialogTitle>Créer un nouvel étage</DialogTitle>
+                <DialogContent>
+                  <TextField
+                    autoFocus
+                    margin="dense"
+                    label="Numéro d'étage"
+                    type="number"
+                    fullWidth
+                    value={floorForm.floorNumber}
+                    onChange={e => setFloorForm(f => ({ ...f, floorNumber: e.target.value }))}
+                  />
+                  <TextField
+                    margin="dense"
+                    label="Nom de l'étage"
+                    fullWidth
+                    value={floorForm.name}
+                    onChange={e => setFloorForm(f => ({ ...f, name: e.target.value }))}
+                  />
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenFloorDialog(false)}>Annuler</Button>
+                  <Button onClick={handleAddFloor} variant="contained">Créer l'étage</Button>
+                </DialogActions>
+              </Dialog>
+              {/* Dialog de création de salle */}
+              <RoomCreation
+                open={openRoomDialog}
+                onClose={() => { setOpenRoomDialog(false); setSelectedFloorForRoom(null); }}
+                onSubmit={handleCreateRoom}
+                floorNumber={selectedFloorForRoom ? selectedFloorForRoom.floorNumber : (floors[0]?.floorNumber || null)}
+              />
             </Paper>
           </Grid>
 

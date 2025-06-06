@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {
+  createFloor,
   getFloors,
   getFloorByNumber,
   updateFloor,
@@ -10,6 +11,9 @@ const {
   deleteElement,
 } = require("../controllers/floorController");
 const { auth, admin } = require("../middleware/auth");
+
+// Route pour créer un étage (Admin)
+router.post("/", auth, admin, createFloor);
 
 // Routes publiques
 router.get("/", getFloors);

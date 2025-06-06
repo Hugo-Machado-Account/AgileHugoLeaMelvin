@@ -1,29 +1,52 @@
 const Floor = require("../models/Floor");
 const Reservation = require("../models/Reservation");
 
-// @desc    Récupérer tous les étages
+// @desc    Créer un nouvel étage
+// @route   POST /api/floors
+// @access  Private/Admin
+const createFloor = async (req, res) => {
+  try {
+    const { floorNumber, name, elements } = req.body;
+
+    // Vérifier si l'étage existe déjà
+    const existingFloor = await Floor.findByFloorNumber(floorNumber);
+    if (existingFloor) {
+      return res.status(400).json({ message: "Cet étage existe déjà" });
+    }
+
+    const floor = await Floor.create({
+      floorNumber,
+      name,
+      elements
+    });
+
+    res.status(201).json(floor);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Obtenir tous les étages
 // @route   GET /api/floors
 // @access  Public
 const getFloors = async (req, res) => {
   try {
-    const floors = await Floor.find({});
+    const floors = await Floor.findAll();
     res.json(floors);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Récupérer un étage spécifique
+// @desc    Obtenir un étage par numéro
 // @route   GET /api/floors/:floorNumber
 // @access  Public
 const getFloorByNumber = async (req, res) => {
   try {
-    const floor = await Floor.findOne({ floorNumber: req.params.floorNumber });
-
+    const floor = await Floor.findByFloorNumber(parseInt(req.params.floorNumber));
     if (!floor) {
       return res.status(404).json({ message: "Étage non trouvé" });
     }
-
     res.json(floor);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -31,19 +54,46 @@ const getFloorByNumber = async (req, res) => {
 };
 
 // @desc    Mettre à jour un étage
-// @route   PUT /api/floors/:floorNumber
-// @access  Private (Admin)
+// @route   PUT /api/floors/:id
+// @access  Private/Admin
 const updateFloor = async (req, res) => {
   try {
-    const { elements } = req.body;
+    const floor = await Floor.findById(req.params.id);
+    if (!floor) {
+      return res.status(404).json({ message: "Étage non trouvé" });
+    }
 
-    const floor = await Floor.findOneAndUpdate(
-      { floorNumber: req.params.floorNumber },
-      { elements },
-      { new: true, upsert: true }
-    );
+    const updatedFloor = await Floor.update(req.params.id, req.body);
+    res.json(updatedFloor);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
-    res.json(floor);
+// @desc    Supprimer un étage
+// @route   DELETE /api/floors/:id
+// @access  Private/Admin
+const deleteFloor = async (req, res) => {
+  try {
+    const floor = await Floor.findById(req.params.id);
+    if (!floor) {
+      return res.status(404).json({ message: "Étage non trouvé" });
+    }
+
+    await Floor.delete(req.params.id);
+    res.json({ message: "Étage supprimé" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Obtenir toutes les salles
+// @route   GET /api/floors/rooms
+// @access  Public
+const getAllRooms = async (req, res) => {
+  try {
+    const rooms = await Floor.getAllRooms();
+    res.json(rooms);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -54,7 +104,7 @@ const updateFloor = async (req, res) => {
 // @access  Public
 const getRoomsByFloor = async (req, res) => {
   try {
-    const floor = await Floor.findOne({ floorNumber: req.params.floorNumber });
+    const floor = await Floor.findByFloorNumber(parseInt(req.params.floorNumber));
 
     if (!floor) {
       return res.status(404).json({ message: "Étage non trouvé" });
@@ -64,15 +114,17 @@ const getRoomsByFloor = async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const reservations = await Reservation.find({
-      floorNumber: req.params.floorNumber,
-      date: { $gte: today },
+    // Firestore: on utilise findByField et on filtre ensuite par date
+    const reservations = await Reservation.findByField('floorNumber', parseInt(req.params.floorNumber));
+    const filteredReservations = (reservations || []).filter(r => {
+      const date = new Date(r.date);
+      return date >= today;
     });
 
     // Mettre à jour le statut des salles en fonction des réservations
-    const roomsWithStatus = floor.elements.map((element) => {
+    const roomsWithStatus = (floor.elements || []).map((element) => {
       if (element.type === "room") {
-        const hasReservation = reservations.some((reservation) => {
+        const hasReservation = filteredReservations.some((reservation) => {
           const reservationDate = new Date(reservation.date);
           reservationDate.setHours(0, 0, 0, 0);
 
@@ -84,7 +136,7 @@ const getRoomsByFloor = async (req, res) => {
         });
 
         return {
-          ...element.toObject(),
+          ...(typeof element.toObject === 'function' ? element.toObject() : element),
           status: hasReservation ? "reserved" : "available",
         };
       }
@@ -93,6 +145,7 @@ const getRoomsByFloor = async (req, res) => {
 
     res.json(roomsWithStatus);
   } catch (error) {
+    console.error('Erreur dans getRoomsByFloor:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -102,7 +155,7 @@ const getRoomsByFloor = async (req, res) => {
 // @access  Private (Admin)
 const addElementToFloor = async (req, res) => {
   try {
-    const floor = await Floor.findOne({ floorNumber: req.params.floorNumber });
+    const floor = await Floor.findByFloorNumber(parseInt(req.params.floorNumber));
 
     if (!floor) {
       return res.status(404).json({ message: "Étage non trouvé" });
@@ -113,6 +166,7 @@ const addElementToFloor = async (req, res) => {
       id: req.body.id || `elem-${Date.now()}`,
     };
 
+    floor.elements = floor.elements || [];
     floor.elements.push(newElement);
     await floor.save();
 
@@ -127,13 +181,13 @@ const addElementToFloor = async (req, res) => {
 // @access  Private (Admin)
 const updateElement = async (req, res) => {
   try {
-    const floor = await Floor.findOne({ floorNumber: req.params.floorNumber });
+    const floor = await Floor.findByFloorNumber(parseInt(req.params.floorNumber));
 
     if (!floor) {
       return res.status(404).json({ message: "Étage non trouvé" });
     }
 
-    const elementIndex = floor.elements.findIndex(
+    const elementIndex = (floor.elements || []).findIndex(
       (el) => el.id === req.params.elementId
     );
 
@@ -159,13 +213,13 @@ const updateElement = async (req, res) => {
 // @access  Private (Admin)
 const deleteElement = async (req, res) => {
   try {
-    const floor = await Floor.findOne({ floorNumber: req.params.floorNumber });
+    const floor = await Floor.findByFloorNumber(parseInt(req.params.floorNumber));
 
     if (!floor) {
       return res.status(404).json({ message: "Étage non trouvé" });
     }
 
-    const elementIndex = floor.elements.findIndex(
+    const elementIndex = (floor.elements || []).findIndex(
       (el) => el.id === req.params.elementId
     );
 
@@ -183,9 +237,12 @@ const deleteElement = async (req, res) => {
 };
 
 module.exports = {
+  createFloor,
   getFloors,
   getFloorByNumber,
   updateFloor,
+  deleteFloor,
+  getAllRooms,
   getRoomsByFloor,
   addElementToFloor,
   updateElement,

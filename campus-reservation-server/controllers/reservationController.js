@@ -1,5 +1,5 @@
-const Reservation = require("../models/Reservation");
-const Floor = require("../models/Floor");
+const Reservation = require('../models/Reservation');
+const Floor = require('../models/Floor');
 
 // @desc    Créer une nouvelle réservation
 // @route   POST /api/reservations
@@ -9,140 +9,117 @@ const createReservation = async (req, res) => {
     const {
       roomId,
       floorNumber,
-      name,
-      email,
       date,
       startTime,
       endTime,
       purpose,
-      notes,
+      notes
     } = req.body;
 
-    // Vérifier si la salle existe
-    const floor = await Floor.findOne({
-      floorNumber,
-      "elements.id": roomId,
-      "elements.type": "room",
-    });
-
+    // Vérifier si la salle existe et est disponible
+    const floor = await Floor.findByFloorNumber(floorNumber);
     if (!floor) {
+      return res.status(404).json({ message: "Étage non trouvé" });
+    }
+
+    const room = floor.elements.find(element => element.id === roomId);
+    if (!room) {
       return res.status(404).json({ message: "Salle non trouvée" });
     }
 
-    // Vérifier si la salle est déjà réservée à cette date et ces heures
-    const reservationDate = new Date(date);
-    reservationDate.setHours(0, 0, 0, 0);
-
-    const existingReservation = await Reservation.findOne({
-      roomId,
-      date: reservationDate,
-      $or: [
-        {
-          startTime: { $lte: startTime },
-          endTime: { $gt: startTime },
-        },
-        {
-          startTime: { $lt: endTime },
-          endTime: { $gte: endTime },
-        },
-        {
-          startTime: { $gte: startTime },
-          endTime: { $lte: endTime },
-        },
-      ],
+    // Vérifier si la salle est déjà réservée pour cette période
+    const existingReservations = await Reservation.findByRoomId(roomId);
+    const isOverlapping = existingReservations.some(reservation => {
+      if (reservation.date.toDateString() !== new Date(date).toDateString()) {
+        return false;
+      }
+      return (
+        (startTime >= reservation.startTime && startTime < reservation.endTime) ||
+        (endTime > reservation.startTime && endTime <= reservation.endTime) ||
+        (startTime <= reservation.startTime && endTime >= reservation.endTime)
+      );
     });
 
-    if (existingReservation) {
-      return res.status(400).json({
-        message: "La salle est déjà réservée sur ce créneau horaire",
-      });
+    if (isOverlapping) {
+      return res.status(400).json({ message: "La salle est déjà réservée pour cette période" });
     }
 
     // Créer la réservation
-    const newReservation = new Reservation({
+    const reservation = await Reservation.create({
       roomId,
       floorNumber,
-      userId: req.user ? req.user._id : undefined,
-      name,
-      email,
-      date: reservationDate,
+      userId: req.user.id,
+      name: `${req.user.firstName} ${req.user.lastName}`,
+      email: req.user.email,
+      date: new Date(date),
       startTime,
       endTime,
       purpose,
       notes,
+      status: 'confirmed'
     });
 
-    await newReservation.save();
+    // Mettre à jour le statut de la salle
+    await Floor.updateRoomStatus(floor.id, roomId, 'reserved');
 
-    res.status(201).json(newReservation);
+    res.status(201).json(reservation);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Récupérer toutes les réservations
+// @desc    Obtenir toutes les réservations (admin/teacher)
 // @route   GET /api/reservations
-// @access  Private (Admin)
+// @access  Private/Admin
 const getReservations = async (req, res) => {
   try {
-    const { roomId, date, userId } = req.query;
-    const query = {};
+    const { status, startDate, endDate } = req.query;
+    let reservations;
 
-    if (roomId) {
-      query.roomId = roomId;
+    if (status) {
+      reservations = await Reservation.findByStatus(status);
+    } else if (startDate && endDate) {
+      reservations = await Reservation.findByDateRange(
+        new Date(startDate),
+        new Date(endDate)
+      );
+    } else {
+      reservations = await Reservation.findAll();
     }
 
-    if (date) {
-      const queryDate = new Date(date);
-      queryDate.setHours(0, 0, 0, 0);
-      query.date = queryDate;
-    }
-
-    if (userId) {
-      query.userId = userId;
-    }
-
-    const reservations = await Reservation.find(query).sort({
-      date: 1,
-      startTime: 1,
-    });
     res.json(reservations);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Récupérer les réservations de l'utilisateur connecté
+// @desc    Obtenir les réservations de l'utilisateur connecté
 // @route   GET /api/reservations/my
 // @access  Private
 const getMyReservations = async (req, res) => {
   try {
-    const reservations = await Reservation.find({ userId: req.user._id }).sort({
-      date: 1,
-      startTime: 1,
-    });
+    const reservations = await Reservation.findByUserId(req.user.id);
     res.json(reservations);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Récupérer une réservation par ID
+// @desc    Obtenir une réservation par ID
 // @route   GET /api/reservations/:id
 // @access  Private
 const getReservationById = async (req, res) => {
   try {
     const reservation = await Reservation.findById(req.params.id);
-
     if (!reservation) {
       return res.status(404).json({ message: "Réservation non trouvée" });
     }
 
     // Vérifier si l'utilisateur est autorisé à voir cette réservation
     if (
-      req.user.role !== "admin" &&
-      reservation.userId &&
-      reservation.userId.toString() !== req.user._id.toString()
+      reservation.userId !== req.user.id &&
+      req.user.role !== 'admin' &&
+      req.user.role !== 'teacher'
     ) {
       return res.status(403).json({ message: "Non autorisé" });
     }
@@ -159,69 +136,21 @@ const getReservationById = async (req, res) => {
 const updateReservation = async (req, res) => {
   try {
     const reservation = await Reservation.findById(req.params.id);
-
     if (!reservation) {
       return res.status(404).json({ message: "Réservation non trouvée" });
     }
 
     // Vérifier si l'utilisateur est autorisé à modifier cette réservation
     if (
-      req.user.role !== "admin" &&
-      reservation.userId &&
-      reservation.userId.toString() !== req.user._id.toString()
+      reservation.userId !== req.user.id &&
+      req.user.role !== 'admin' &&
+      req.user.role !== 'teacher'
     ) {
       return res.status(403).json({ message: "Non autorisé" });
     }
 
-    // Si la date ou les heures changent, vérifier les conflits
-    if (req.body.date || req.body.startTime || req.body.endTime) {
-      const date = req.body.date ? new Date(req.body.date) : reservation.date;
-      date.setHours(0, 0, 0, 0);
-
-      const startTime = req.body.startTime || reservation.startTime;
-      const endTime = req.body.endTime || reservation.endTime;
-
-      const existingReservation = await Reservation.findOne({
-        roomId: reservation.roomId,
-        date: date,
-        _id: { $ne: req.params.id },
-        $or: [
-          {
-            startTime: { $lte: startTime },
-            endTime: { $gt: startTime },
-          },
-          {
-            startTime: { $lt: endTime },
-            endTime: { $gte: endTime },
-          },
-          {
-            startTime: { $gte: startTime },
-            endTime: { $lte: endTime },
-          },
-        ],
-      });
-
-      if (existingReservation) {
-        return res.status(400).json({
-          message: "La salle est déjà réservée sur ce créneau horaire",
-        });
-      }
-    }
-
-    // Mettre à jour la réservation
-    Object.keys(req.body).forEach((key) => {
-      if (key === "date") {
-        const date = new Date(req.body.date);
-        date.setHours(0, 0, 0, 0);
-        reservation.date = date;
-      } else {
-        reservation[key] = req.body[key];
-      }
-    });
-
-    await reservation.save();
-
-    res.json(reservation);
+    const updatedReservation = await Reservation.update(req.params.id, req.body);
+    res.json(updatedReservation);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -233,23 +162,27 @@ const updateReservation = async (req, res) => {
 const deleteReservation = async (req, res) => {
   try {
     const reservation = await Reservation.findById(req.params.id);
-
     if (!reservation) {
       return res.status(404).json({ message: "Réservation non trouvée" });
     }
 
     // Vérifier si l'utilisateur est autorisé à supprimer cette réservation
     if (
-      req.user.role !== "admin" &&
-      reservation.userId &&
-      reservation.userId.toString() !== req.user._id.toString()
+      reservation.userId !== req.user.id &&
+      req.user.role !== 'admin' &&
+      req.user.role !== 'teacher'
     ) {
       return res.status(403).json({ message: "Non autorisé" });
     }
 
-    await reservation.remove();
+    // Mettre à jour le statut de la salle
+    const floor = await Floor.findByFloorNumber(reservation.floorNumber);
+    if (floor) {
+      await Floor.updateRoomStatus(floor.id, reservation.roomId, 'available');
+    }
 
-    res.json({ message: "Réservation supprimée avec succès" });
+    await Reservation.delete(req.params.id);
+    res.json({ message: "Réservation supprimée" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -261,5 +194,5 @@ module.exports = {
   getMyReservations,
   getReservationById,
   updateReservation,
-  deleteReservation,
+  deleteReservation
 };
