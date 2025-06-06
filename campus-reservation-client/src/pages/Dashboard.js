@@ -9,21 +9,24 @@ import {
   Box,
   Card,
   CardContent,
-  CardMedia,
   CardActionArea,
-  Divider,
   List,
   ListItem,
   ListItemText,
   Alert,
   CircularProgress,
   Chip,
+  Avatar,
+  LinearProgress,
 } from "@mui/material";
 import {
   Event as EventIcon,
   Room as RoomIcon,
   Today as TodayIcon,
   ArrowForward as ArrowForwardIcon,
+  TrendingUp as TrendingUpIcon,
+  AccessTime as AccessTimeIcon,
+  LocationOn as LocationOnIcon,
 } from "@mui/icons-material";
 import { useAuth } from "../contexts/AuthContext";
 import { floorService, reservationService } from "../services/apiService";
@@ -84,197 +87,404 @@ const Dashboard = () => {
     navigate(`/floor/${floorNumber}`);
   };
 
+  // Statistiques rapides
+  const quickStats = [
+    {
+      title: "Réservations à venir",
+      value: upcomingReservations.length,
+      icon: <EventIcon />,
+      color: "#3730a3",
+    },
+    {
+      title: "Étages disponibles",
+      value: floors.length,
+      icon: <RoomIcon />,
+      color: "#059669",
+    },
+    {
+      title: "Utilisation",
+      value: "94%",
+      icon: <TrendingUpIcon />,
+      color: "#dc2626",
+    },
+  ];
+
   if (loading) {
     return (
-      <Container sx={{ py: 5, textAlign: "center" }}>
-        <CircularProgress />
-        <Typography variant="body1" sx={{ mt: 2 }}>
-          Chargement du tableau de bord...
-        </Typography>
+      <Container sx={{ py: 5 }}>
+        <Box sx={{ textAlign: "center", mb: 4 }}>
+          <CircularProgress sx={{ color: "#3730a3" }} />
+          <Typography variant="h6" sx={{ mt: 2, color: "#64748b" }}>
+            Chargement du tableau de bord...
+          </Typography>
+        </Box>
+        <LinearProgress sx={{ borderRadius: 2, height: 6 }} />
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {error && (
-        <Alert severity="error" sx={{ mb: 4 }}>
-          {error}
-        </Alert>
-      )}
+    <Box sx={{ backgroundColor: "#f8fafc", minHeight: "100vh", py: 4 }}>
+      <Container maxWidth="lg">
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 4,
+              borderRadius: 2,
+              border: "1px solid #fca5a5",
+            }}
+          >
+            {error}
+          </Alert>
+        )}
 
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Bienvenue, {user?.firstName} !
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Que souhaitez-vous faire aujourd'hui ?
-        </Typography>
-      </Box>
-
-      <Grid container spacing={4}>
-        {/* Section des étages */}
-        <Grid item xs={12} md={8}>
-          <Paper elevation={2} sx={{ p: 3, height: "100%" }}>
-            <Box
+        {/* Header */}
+        <Box sx={{ mb: 6 }}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <Avatar
               sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 2,
+                width: 56,
+                height: 56,
+                mr: 3,
+                backgroundColor: "#3730a3",
+                fontSize: "1.5rem",
+                fontWeight: 600,
               }}
             >
-              <Typography variant="h5" component="h2">
-                <RoomIcon
-                  color="primary"
-                  sx={{ verticalAlign: "middle", mr: 1 }}
-                />
-                Étages et Salles
-              </Typography>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => navigate("/my-reservations")}
-                endIcon={<ArrowForwardIcon />}
+              {user?.firstName?.charAt(0) || "U"}
+            </Avatar>
+            <Box>
+              <Typography 
+                variant="h3" 
+                sx={{ 
+                  fontWeight: 700,
+                  color: "#1e293b",
+                  letterSpacing: "-0.02em",
+                  mb: 0.5,
+                }}
               >
-                Voir mes réservations
-              </Button>
+                Bienvenue, {user?.firstName} !
+              </Typography>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  color: "#64748b",
+                  fontWeight: 400,
+                }}
+              >
+                Gérez vos réservations et explorez les espaces disponibles
+              </Typography>
             </Box>
+          </Box>
+        </Box>
 
-            <Grid container spacing={2}>
-              {floors.length > 0 ? (
-                floors.map((floor) => (
-                  <Grid item xs={12} sm={6} md={4} key={floor._id}>
-                    <Card sx={{ height: "100%" }}>
-                      <CardActionArea
-                        onClick={() => navigateToFloor(floor.floorNumber)}
-                      >
-                        <CardMedia
-                          component="img"
-                          height="140"
-                          image={`/api/placeholder/400/140?text=Étage ${floor.floorNumber}`}
-                          alt={`Étage ${floor.floorNumber}`}
-                        />
-                        <CardContent>
-                          <Typography gutterBottom variant="h6" component="div">
-                            {floor.name}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Étage {floor.floorNumber}
-                          </Typography>
-                          <Box sx={{ mt: 1 }}>
-                            <Chip
-                              size="small"
-                              label={`${
-                                floor.elements.filter((e) => e.type === "room")
-                                  .length
-                              } salles`}
-                              color="primary"
-                              variant="outlined"
-                            />
-                          </Box>
-                        </CardContent>
-                      </CardActionArea>
-                    </Card>
-                  </Grid>
-                ))
-              ) : (
-                <Grid item xs={12}>
-                  <Typography variant="body1" color="text.secondary">
-                    Aucun étage disponible
+        {/* Stats rapides */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {quickStats.map((stat, index) => (
+            <Grid item xs={12} md={4} key={index}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  border: "1px solid #e2e8f0",
+                  background: "white",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                  },
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      backgroundColor: `${stat.color}15`,
+                      color: stat.color,
+                      mr: 2,
+                    }}
+                  >
+                    {stat.icon}
+                  </Box>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: "#1e293b" }}>
+                    {stat.value}
                   </Typography>
-                </Grid>
-              )}
+                </Box>
+                <Typography variant="body1" sx={{ color: "#64748b", fontWeight: 500 }}>
+                  {stat.title}
+                </Typography>
+              </Paper>
             </Grid>
-          </Paper>
+          ))}
         </Grid>
 
-        {/* Section des réservations à venir */}
-        <Grid item xs={12} md={4}>
-          <Paper elevation={2} sx={{ p: 3, height: "100%" }}>
-            <Box
+        <Grid container spacing={4}>
+          {/* Section des étages */}
+          <Grid item xs={12} lg={8}>
+            <Paper
+              elevation={0}
               sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 2,
+                p: 4,
+                borderRadius: 3,
+                border: "1px solid #e2e8f0",
+                background: "white",
+                height: "100%",
               }}
             >
-              <Typography variant="h5" component="h2">
-                <TodayIcon
-                  color="primary"
-                  sx={{ verticalAlign: "middle", mr: 1 }}
-                />
-                Prochaines réservations
-              </Typography>
-            </Box>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: 2,
+                      backgroundColor: "#3730a315",
+                      color: "#3730a3",
+                      mr: 2,
+                    }}
+                  >
+                    <RoomIcon />
+                  </Box>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      fontWeight: 600,
+                      color: "#1e293b",
+                    }}
+                  >
+                    Étages et Salles
+                  </Typography>
+                </Box>
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate("/my-reservations")}
+                  endIcon={<ArrowForwardIcon />}
+                  sx={{
+                    borderColor: "#3730a3",
+                    color: "#3730a3",
+                    textTransform: "none",
+                    fontWeight: 500,
+                    borderRadius: 2,
+                    "&:hover": {
+                      borderColor: "#1e40af",
+                      backgroundColor: "#3730a308",
+                    },
+                  }}
+                >
+                  Mes réservations
+                </Button>
+              </Box>
 
-            {upcomingReservations.length > 0 ? (
-              <List>
-                {upcomingReservations.map((reservation) => (
-                  <React.Fragment key={reservation._id}>
-                    <ListItem
-                      button
-                      onClick={() =>
-                        navigate(
-                          `/room/${reservation.floorNumber}/${reservation.roomId}`
-                        )
-                      }
-                      sx={{ flexDirection: "column", alignItems: "flex-start" }}
-                    >
-                      <Box
+              <Grid container spacing={3}>
+                {floors.length > 0 ? (
+                  floors.map((floor) => (
+                    <Grid item xs={12} sm={6} lg={4} key={floor._id}>
+                      <Card
+                        elevation={0}
                         sx={{
-                          width: "100%",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: 3,
+                          "&:hover": {
+                            transform: "translateY(-4px)",
+                            boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                          },
+                          transition: "all 0.2s ease",
                         }}
                       >
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <EventIcon color="secondary" sx={{ mr: 1 }} />
-                          <ListItemText
-                            primary={formatDate(reservation.date)}
-                            secondary={`${reservation.startTime} - ${reservation.endTime}`}
+                        <CardActionArea onClick={() => navigateToFloor(floor.floorNumber)}>
+                          <Box
+                            sx={{
+                              height: 120,
+                              background: `linear-gradient(135deg, #3730a3 0%, #1e40af 100%)`,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "white",
+                            }}
+                          >
+                            <Box sx={{ textAlign: "center" }}>
+                              <LocationOnIcon sx={{ fontSize: 32, mb: 1 }} />
+                              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                Étage {floor.floorNumber}
+                              </Typography>
+                            </Box>
+                          </Box>
+                          <CardContent sx={{ p: 3 }}>
+                            <Typography 
+                              variant="h6" 
+                              sx={{ 
+                                fontWeight: 600,
+                                color: "#1e293b",
+                                mb: 1,
+                              }}
+                            >
+                              {floor.name}
+                            </Typography>
+                            <Box sx={{ display: "flex", gap: 1 }}>
+                              <Chip
+                                size="small"
+                                label={`${floor.elements.filter((e) => e.type === "room").length} salles`}
+                                sx={{
+                                  backgroundColor: "#3730a315",
+                                  color: "#3730a3",
+                                  fontWeight: 500,
+                                }}
+                              />
+                            </Box>
+                          </CardContent>
+                        </CardActionArea>
+                      </Card>
+                    </Grid>
+                  ))
+                ) : (
+                  <Grid item xs={12}>
+                    <Box sx={{ textAlign: "center", py: 4 }}>
+                      <RoomIcon sx={{ fontSize: 48, color: "#94a3b8", mb: 2 }} />
+                      <Typography variant="h6" sx={{ color: "#64748b" }}>
+                        Aucun étage disponible
+                      </Typography>
+                    </Box>
+                  </Grid>
+                )}
+              </Grid>
+            </Paper>
+          </Grid>
+
+          {/* Section des réservations à venir */}
+          <Grid item xs={12} lg={4}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 4,
+                borderRadius: 3,
+                border: "1px solid #e2e8f0",
+                background: "white",
+                height: "100%",
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
+                <Box
+                  sx={{
+                    p: 1,
+                    borderRadius: 2,
+                    backgroundColor: "#05966915",
+                    color: "#059669",
+                    mr: 2,
+                  }}
+                >
+                  <TodayIcon />
+                </Box>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: "#1e293b",
+                  }}
+                >
+                  Prochaines réservations
+                </Typography>
+              </Box>
+
+              {upcomingReservations.length > 0 ? (
+                <List sx={{ p: 0 }}>
+                  {upcomingReservations.map((reservation, index) => (
+                    <ListItem
+                      key={reservation._id}
+                      onClick={() => navigate(`/room/${reservation.floorNumber}/${reservation.roomId}`)}
+                      sx={{
+                        p: 2,
+                        mb: 2,
+                        borderRadius: 2,
+                        border: "1px solid #e2e8f0",
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: "#f1f5f9",
+                        },
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      <Box sx={{ width: "100%" }}>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+                          <Typography 
+                            variant="subtitle2" 
+                            sx={{ 
+                              fontWeight: 600,
+                              color: "#1e293b",
+                            }}
+                          >
+                            {formatDate(reservation.date)}
+                          </Typography>
+                          <Chip
+                            size="small"
+                            label={`Salle ${reservation.roomId}`}
+                            sx={{
+                              backgroundColor: "#05966915",
+                              color: "#059669",
+                              fontWeight: 500,
+                              fontSize: "0.75rem",
+                            }}
                           />
                         </Box>
-                        <Chip
-                          size="small"
-                          label={`Salle ${reservation.roomId}`}
-                          color="secondary"
-                        />
+                        <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                          <AccessTimeIcon sx={{ fontSize: 16, color: "#64748b", mr: 0.5 }} />
+                          <Typography variant="body2" sx={{ color: "#64748b" }}>
+                            {reservation.startTime} - {reservation.endTime}
+                          </Typography>
+                        </Box>
+                        {reservation.purpose && (
+                          <Typography 
+                            variant="body2" 
+                            sx={{ 
+                              color: "#64748b",
+                              fontStyle: "italic",
+                            }}
+                          >
+                            {reservation.purpose}
+                          </Typography>
+                        )}
                       </Box>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ mt: 1 }}
-                      >
-                        {reservation.purpose}
-                      </Typography>
                     </ListItem>
-                    <Divider component="li" />
-                  </React.Fragment>
-                ))}
-              </List>
-            ) : (
-              <Typography variant="body1" color="text.secondary">
-                Vous n'avez aucune réservation à venir.
-              </Typography>
-            )}
+                  ))}
+                </List>
+              ) : (
+                <Box sx={{ textAlign: "center", py: 4 }}>
+                  <EventIcon sx={{ fontSize: 48, color: "#94a3b8", mb: 2 }} />
+                  <Typography variant="h6" sx={{ color: "#64748b", mb: 2 }}>
+                    Aucune réservation à venir
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#94a3b8" }}>
+                    Explorez les étages pour réserver une salle
+                  </Typography>
+                </Box>
+              )}
 
-            <Box sx={{ mt: 2, textAlign: "center" }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => navigate("/my-reservations")}
-                endIcon={<ArrowForwardIcon />}
-              >
-                Toutes mes réservations
-              </Button>
-            </Box>
-          </Paper>
+              <Box sx={{ mt: 3 }}>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={() => navigate("/my-reservations")}
+                  endIcon={<ArrowForwardIcon />}
+                  sx={{
+                    backgroundColor: "#3730a3",
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontWeight: 600,
+                    "&:hover": {
+                      backgroundColor: "#1e40af",
+                    },
+                  }}
+                >
+                  Voir toutes mes réservations
+                </Button>
+              </Box>
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

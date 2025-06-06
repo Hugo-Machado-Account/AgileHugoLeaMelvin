@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Container,
@@ -8,298 +8,500 @@ import {
   Grid,
   Card,
   CardContent,
-  CardMedia,
-  CardActions,
   Paper,
-  Divider,
+  Chip,
+  Avatar,
+  Fade,
+  Grow,
+  Slide,
 } from "@mui/material";
 import {
   Event as EventIcon,
   Room as RoomIcon,
   DateRange as DateRangeIcon,
   PersonOutline as PersonOutlineIcon,
+  Star as StarIcon,
+  CheckCircle as CheckCircleIcon,
+  Schedule as ScheduleIcon,
+  Groups as GroupsIcon,
+  TrendingUp as TrendingUpIcon,
+  Security as SecurityIcon,
+  Speed as SpeedIcon,
+  SupportAgent as SupportIcon,
 } from "@mui/icons-material";
 import { useAuth } from "../contexts/AuthContext";
 
 const Home = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const [animationTrigger, setAnimationTrigger] = useState(false);
 
-  // Liste des fonctionnalités
+  useEffect(() => {
+    setAnimationTrigger(true);
+  }, []);
+
+  // Stats professionnelles
+  const stats = [
+    { number: "200+", label: "Réservations traitées", icon: <EventIcon /> },
+    { number: "10+", label: "Salles disponibles", icon: <RoomIcon /> },
+    { number: "100%", label: "Taux de satisfaction", icon: <StarIcon /> },
+    { number: "24/7", label: "Support technique", icon: <SupportIcon /> },
+  ];
+
+  // Fonctionnalités épurées
   const features = [
     {
-      title: "Réservation Facile",
-      description:
-        "Réservez des salles en quelques clics à travers une interface intuitive.",
-      icon: <EventIcon fontSize="large" color="primary" />,
+      title: "Réservation Simplifiée",
+      description: "Interface intuitive pour réserver vos salles en quelques clics. Gain de temps garanti pour tous vos besoins.",
+      icon: <SpeedIcon />,
     },
     {
-      title: "Vue d'Étage",
-      description:
-        "Visualisez les salles disponibles par étage avec leurs caractéristiques.",
-      icon: <RoomIcon fontSize="large" color="primary" />,
+      title: "Gestion Centralisée",
+      description: "Visualisez et gérez toutes vos réservations depuis un tableau de bord unifié et professionnel.",
+      icon: <RoomIcon />,
     },
     {
-      title: "Gestion des Réservations",
-      description:
-        "Gérez toutes vos réservations à venir et passées en un seul endroit.",
-      icon: <DateRangeIcon fontSize="large" color="primary" />,
+      title: "Planification Avancée",
+      description: "Outils de planification intelligents avec suggestions automatiques et gestion des conflits.",
+      icon: <DateRangeIcon />,
     },
     {
-      title: "Profil Utilisateur",
-      description:
-        "Personnalisez votre profil et accédez à votre historique de réservations.",
-      icon: <PersonOutlineIcon fontSize="large" color="primary" />,
+      title: "Analytics & Reporting",
+      description: "Rapports détaillés et statistiques d'utilisation pour optimiser la gestion de vos espaces.",
+      icon: <TrendingUpIcon />,
+    },
+  ];
+
+  // Témoignages professionnels
+  const testimonials = [
+    {
+      name: "Dr. Sarah Martin",
+      role: "Directrice Pédagogique",
+      avatar: "SM",
+      comment: "Solution remarquable qui a considérablement optimisé notre gestion des espaces de formation.",
+    },
+    {
+      name: "Pierre Dubois", 
+      role: "Responsable Logistique",
+      avatar: "PD",
+      comment: "Interface parfaitement adaptée à nos besoins. L'efficacité et la simplicité sont au rendez-vous.",
+    },
+    {
+      name: "Marie Leroy",
+      role: "Administratrice Campus",
+      avatar: "ML",
+      comment: "Outil indispensable pour notre établissement. La productivité de notre équipe s'est nettement améliorée.",
     },
   ];
 
   return (
     <>
-      {/* Section Hero */}
+      {/* Hero Section - Design Professionnel */}
       <Box
         sx={{
-          bgcolor: "primary.main",
-          color: "white",
-          pt: 8,
-          pb: 6,
+          background: "linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #1e40af 100%)",
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
-        <Container maxWidth="lg">
-          <Grid container spacing={4} alignItems="center">
+        <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
+          <Grid container spacing={8} alignItems="center">
             <Grid item xs={12} md={6}>
-              <Typography
-                component="h1"
-                variant="h2"
-                color="inherit"
-                gutterBottom
-                sx={{ fontWeight: "bold" }}
-              >
-                Réservation de Salles Campus
-              </Typography>
-              <Typography variant="h5" color="inherit" paragraph>
-                Une solution simple et efficace pour la gestion et la
-                réservation des salles de votre campus. Trouvez et réservez la
-                salle parfaite pour vos cours, réunions ou événements en
-                quelques clics.
-              </Typography>
-              <Box sx={{ mt: 4 }}>
-                {isAuthenticated ? (
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    size="large"
-                    onClick={() => navigate("/dashboard")}
-                    sx={{ mr: 2 }}
+              <Fade in={animationTrigger} timeout={800}>
+                <Box>
+                  <Typography
+                    component="h1"
+                    sx={{
+                      fontSize: { xs: "2.5rem", md: "3.5rem" },
+                      fontWeight: 700,
+                      color: "white",
+                      mb: 3,
+                      lineHeight: 1.2,
+                      letterSpacing: "-0.02em",
+                    }}
                   >
-                    Tableau de bord
-                  </Button>
-                ) : (
-                  <>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      size="large"
-                      onClick={() => navigate("/login")}
-                      sx={{ mr: 2 }}
-                    >
-                      Connexion
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      color="inherit"
-                      size="large"
-                      onClick={() => navigate("/register")}
-                    >
-                      Inscription
-                    </Button>
-                  </>
-                )}
-              </Box>
+                    Réservation de Salles
+                    <br />
+                    <span style={{ color: "#60a5fa" }}>Nouvelle Génération</span>
+                  </Typography>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      color: "rgba(255,255,255,0.85)", 
+                      mb: 4, 
+                      lineHeight: 1.6,
+                      fontWeight: 400,
+                      maxWidth: 500,
+                    }}
+                  >
+                    Plateforme professionnelle de gestion des réservations de salles. 
+                    Simplifiez vos processus avec une solution moderne et efficace.
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+                    {isAuthenticated ? (
+                      <Button
+                        variant="contained"
+                        size="large"
+                        onClick={() => navigate("/dashboard")}
+                        sx={{
+                          backgroundColor: "white",
+                          color: "#1e3a8a",
+                          fontWeight: 600,
+                          py: 1.5,
+                          px: 4,
+                          borderRadius: 2,
+                          textTransform: "none",
+                          fontSize: "1rem",
+                          "&:hover": {
+                            backgroundColor: "#f8fafc",
+                            transform: "translateY(-1px)",
+                            boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+                          },
+                          transition: "all 0.2s ease",
+                        }}
+                      >
+                        Accéder au tableau de bord
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          variant="contained"
+                          size="large"
+                          onClick={() => navigate("/login")}
+                          sx={{
+                            backgroundColor: "white",
+                            color: "#1e3a8a",
+                            fontWeight: 600,
+                            py: 1.5,
+                            px: 4,
+                            borderRadius: 2,
+                            textTransform: "none",
+                            fontSize: "1rem",
+                            "&:hover": {
+                              backgroundColor: "#f8fafc",
+                              transform: "translateY(-1px)",
+                              boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+                            },
+                            transition: "all 0.2s ease",
+                          }}
+                        >
+                          Se connecter
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          size="large"
+                          onClick={() => navigate("/register")}
+                          sx={{
+                            borderColor: "white",
+                            color: "white",
+                            py: 1.5,
+                            px: 4,
+                            borderRadius: 2,
+                            borderWidth: 2,
+                            textTransform: "none",
+                            fontSize: "1rem",
+                            fontWeight: 600,
+                            "&:hover": {
+                              borderColor: "#60a5fa",
+                              backgroundColor: "rgba(96, 165, 250, 0.1)",
+                              transform: "translateY(-1px)",
+                            },
+                            transition: "all 0.2s ease",
+                          }}
+                        >
+                          Créer un compte
+                        </Button>
+                      </>
+                    )}
+                  </Box>
+                </Box>
+              </Fade>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box
-                component="img"
-                sx={{
-                  width: "100%",
-                  maxHeight: 400,
-                  objectFit: "cover",
-                  borderRadius: 2,
-                  boxShadow: 3,
-                }}
-                alt="Campus illustration"
-                src="/api/placeholder/600/400?text=Campus+Reservation"
-              />
+              <Slide direction="left" in={animationTrigger} timeout={1000}>
+                <Paper
+                  elevation={12}
+                  sx={{
+                    p: 4,
+                    borderRadius: 3,
+                    background: "rgba(255,255,255,0.95)",
+                    backdropFilter: "blur(10px)",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                  }}
+                >
+                  <Typography variant="h5" sx={{ color: "#1e3a8a", mb: 3, fontWeight: 600 }}>
+                    Tableau de bord
+                  </Typography>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+                    {stats.slice(0, 3).map((stat, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 3,
+                          p: 2.5,
+                          borderRadius: 2,
+                          background: "#f8fafc",
+                          border: "1px solid #e2e8f0",
+                        }}
+                      >
+                        <Box sx={{ color: "#3730a3" }}>{stat.icon}</Box>
+                        <Box>
+                          <Typography variant="h6" sx={{ color: "#1e3a8a", fontWeight: 600 }}>
+                            {stat.number}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: "#64748b" }}>
+                            {stat.label}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    ))}
+                  </Box>
+                </Paper>
+              </Slide>
             </Grid>
           </Grid>
         </Container>
       </Box>
 
-      {/* Section Fonctionnalités */}
-      <Container sx={{ py: 8 }}>
-        <Typography
-          component="h2"
-          variant="h3"
-          align="center"
-          color="textPrimary"
-          gutterBottom
-        >
-          Fonctionnalités
-        </Typography>
-        <Typography variant="h6" align="center" color="textSecondary" paragraph>
-          Notre application offre tout ce dont vous avez besoin pour gérer
-          efficacement vos réservations de salles.
-        </Typography>
-
-        <Grid container spacing={4} sx={{ mt: 4 }}>
-          {features.map((feature, index) => (
-            <Grid item key={index} xs={12} sm={6} md={3}>
-              <Card
-                sx={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
-                  {feature.icon}
-                </Box>
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography
-                    gutterBottom
-                    variant="h5"
-                    component="h3"
-                    align="center"
+      {/* Stats Section - Épurée */}
+      <Box sx={{ py: 8, backgroundColor: "#f8fafc" }}>
+        <Container>
+          <Grid container spacing={4}>
+            {stats.map((stat, index) => (
+              <Grid item xs={6} md={3} key={index}>
+                <Grow in={animationTrigger} timeout={1000 + index * 150}>
+                  <Paper
+                    elevation={2}
+                    sx={{
+                      p: 4,
+                      textAlign: "center",
+                      borderRadius: 3,
+                      background: "white",
+                      border: "1px solid #e2e8f0",
+                      "&:hover": {
+                        transform: "translateY(-4px)",
+                        boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                      },
+                      transition: "all 0.2s ease",
+                    }}
                   >
-                    {feature.title}
-                  </Typography>
-                  <Typography align="center">{feature.description}</Typography>
-                </CardContent>
-              </Card>
+                    <Box sx={{ color: "#3730a3", mb: 2 }}>{stat.icon}</Box>
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: "#1e293b", mb: 1 }}>
+                      {stat.number}
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: "#64748b" }}>
+                      {stat.label}
+                    </Typography>
+                  </Paper>
+                </Grow>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* Features Section - Professionnelle */}
+      <Container sx={{ py: 10 }}>
+        <Box sx={{ textAlign: "center", mb: 8 }}>
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 700,
+              color: "#1e293b",
+              mb: 3,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Fonctionnalités
+          </Typography>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              color: "#64748b", 
+              maxWidth: 600, 
+              mx: "auto",
+              fontWeight: 400,
+              lineHeight: 1.6,
+            }}
+          >
+            Des outils professionnels conçus pour optimiser la gestion de vos espaces
+          </Typography>
+        </Box>
+
+        <Grid container spacing={4}>
+          {features.map((feature, index) => (
+            <Grid item xs={12} md={6} key={index}>
+              <Fade in={animationTrigger} timeout={1200 + index * 200}>
+                <Card
+                  elevation={0}
+                  sx={{
+                    height: "100%",
+                    background: "white",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 3,
+                    overflow: "hidden",
+                    "&:hover": {
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                      "& .feature-icon": {
+                        color: "#3730a3",
+                      },
+                    },
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <CardContent sx={{ p: 4 }}>
+                    <Box
+                      className="feature-icon"
+                      sx={{
+                        color: "#64748b",
+                        mb: 3,
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      {React.cloneElement(feature.icon, { sx: { fontSize: 40 } })}
+                    </Box>
+                    <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: "#1e293b" }}>
+                      {feature.title}
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: "#64748b", lineHeight: 1.6 }}>
+                      {feature.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Fade>
             </Grid>
           ))}
         </Grid>
       </Container>
 
-      {/* Section Comment ça marche */}
-      <Box sx={{ bgcolor: "grey.100", py: 8 }}>
+      {/* Testimonials Section - Sobre */}
+      <Box sx={{ backgroundColor: "#f8fafc", py: 10 }}>
         <Container>
           <Typography
-            component="h2"
             variant="h3"
             align="center"
-            color="textPrimary"
-            gutterBottom
+            sx={{
+              color: "#1e293b",
+              fontWeight: 700,
+              mb: 6,
+              letterSpacing: "-0.02em",
+            }}
           >
-            Comment ça marche
+            Témoignages
           </Typography>
-
-          <Paper elevation={2} sx={{ p: 4, mt: 4 }}>
-            <Grid container spacing={4}>
-              <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: "center", p: 2 }}>
-                  <Typography variant="h5" component="h3" gutterBottom>
-                    1. Connectez-vous
-                  </Typography>
-                  <Box
-                    component="img"
+          <Grid container spacing={4}>
+            {testimonials.map((testimonial, index) => (
+              <Grid item xs={12} md={4} key={index}>
+                <Grow in={animationTrigger} timeout={1500 + index * 200}>
+                  <Paper
+                    elevation={2}
                     sx={{
-                      height: 140,
-                      width: 140,
-                      mb: 2,
+                      p: 4,
+                      borderRadius: 3,
+                      background: "white",
+                      border: "1px solid #e2e8f0",
+                      textAlign: "center",
+                      height: "100%",
+                      "&:hover": {
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                      },
+                      transition: "all 0.2s ease",
                     }}
-                    alt="Connexion"
-                    src="/api/placeholder/140/140?text=Login"
-                  />
-                  <Typography>
-                    Créez un compte ou connectez-vous pour accéder à toutes les
-                    fonctionnalités de l'application.
-                  </Typography>
-                </Box>
+                  >
+                    <Avatar
+                      sx={{
+                        width: 64,
+                        height: 64,
+                        mx: "auto",
+                        mb: 3,
+                        backgroundColor: "#3730a3",
+                        fontSize: "1.25rem",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {testimonial.avatar}
+                    </Avatar>
+                    <Typography variant="body1" sx={{ color: "#1e293b", mb: 3, fontStyle: "italic", lineHeight: 1.6 }}>
+                      "{testimonial.comment}"
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: "#1e293b", fontWeight: 600 }}>
+                      {testimonial.name}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#64748b" }}>
+                      {testimonial.role}
+                    </Typography>
+                  </Paper>
+                </Grow>
               </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: "center", p: 2 }}>
-                  <Typography variant="h5" component="h3" gutterBottom>
-                    2. Trouvez une salle
-                  </Typography>
-                  <Box
-                    component="img"
-                    sx={{
-                      height: 140,
-                      width: 140,
-                      mb: 2,
-                    }}
-                    alt="Recherche de salle"
-                    src="/api/placeholder/140/140?text=Search"
-                  />
-                  <Typography>
-                    Parcourez les étages, filtrez par disponibilité ou par
-                    caractéristiques pour trouver la salle idéale.
-                  </Typography>
-                </Box>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: "center", p: 2 }}>
-                  <Typography variant="h5" component="h3" gutterBottom>
-                    3. Réservez
-                  </Typography>
-                  <Box
-                    component="img"
-                    sx={{
-                      height: 140,
-                      width: 140,
-                      mb: 2,
-                    }}
-                    alt="Réservation"
-                    src="/api/placeholder/140/140?text=Book"
-                  />
-                  <Typography>
-                    Sélectionnez la date, l'heure et confirmez votre réservation
-                    en quelques secondes.
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
-          </Paper>
+            ))}
+          </Grid>
         </Container>
       </Box>
 
-      {/* Section Appel à l'action */}
-      <Container sx={{ py: 8, textAlign: "center" }}>
-        <Typography
-          component="h2"
-          variant="h3"
-          align="center"
-          color="textPrimary"
-          gutterBottom
+      {/* CTA Section - Épurée */}
+      <Container sx={{ py: 10, textAlign: "center" }}>
+        <Box
+          sx={{
+            background: "linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%)",
+            borderRadius: 4,
+            p: 8,
+            color: "white",
+          }}
         >
-          Prêt à commencer ?
-        </Typography>
-        <Typography variant="h6" align="center" color="textSecondary" paragraph>
-          Rejoignez notre plateforme dès maintenant et simplifiez la gestion de
-          vos réservations de salles.
-        </Typography>
-        <Box sx={{ mt: 4 }}>
-          {isAuthenticated ? (
-            <Button
-              variant="contained"
-              color="primary"
-              size="large"
-              onClick={() => navigate("/dashboard")}
-            >
-              Accéder au tableau de bord
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              size="large"
-              onClick={() => navigate("/register")}
-            >
-              S'inscrire gratuitement
-            </Button>
-          )}
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 700,
+              mb: 3,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Prêt à commencer ?
+          </Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              color: "rgba(255,255,255,0.85)",
+              mb: 4,
+              maxWidth: 600,
+              mx: "auto",
+              fontWeight: 400,
+              lineHeight: 1.6,
+            }}
+          >
+            Rejoignez les établissements qui font confiance à notre solution 
+            pour optimiser leur gestion des espaces
+          </Typography>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => navigate(isAuthenticated ? "/dashboard" : "/register")}
+            sx={{
+              backgroundColor: "white",
+              color: "#1e3a8a",
+              fontWeight: 600,
+              py: 2,
+              px: 6,
+              borderRadius: 2,
+              textTransform: "none",
+              fontSize: "1.1rem",
+              "&:hover": {
+                backgroundColor: "#f8fafc",
+                transform: "translateY(-2px)",
+                boxShadow: "0 15px 30px rgba(0,0,0,0.2)",
+              },
+              transition: "all 0.2s ease",
+            }}
+          >
+            {isAuthenticated ? "Accéder au tableau de bord" : "Commencer maintenant"}
+          </Button>
         </Box>
       </Container>
     </>

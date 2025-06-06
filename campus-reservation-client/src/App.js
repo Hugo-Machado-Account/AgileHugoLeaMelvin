@@ -55,7 +55,7 @@ function App() {
         <CssBaseline />
         <Router>
           <Navbar />
-          <main style={{ minHeight: "calc(100vh - 140px)", padding: "2rem 0" }}>
+          <main style={{ minHeight: "calc(100vh - 140px)", padding: "0" }}>
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Home />} />

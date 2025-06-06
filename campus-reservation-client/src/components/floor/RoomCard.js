@@ -4,95 +4,90 @@ import {
   Card,
   CardActionArea,
   CardContent,
-  CardMedia,
   Typography,
   Box,
   Chip,
-  Badge,
   Stack,
   Tooltip,
-  LinearProgress,
+  Divider,
 } from "@mui/material";
 import {
-  MeetingRoom as RoomIcon,
+  MeetingRoom as MeetingRoomIcon,
   People as PeopleIcon,
-  CheckCircle as CheckIcon,
-  DoNotDisturb as CloseIcon,
   Computer as ComputerIcon,
   Videocam as VideocamIcon,
   Wifi as WifiIcon,
   AcUnit as AcUnitIcon,
-  BlurOn as BlurOnIcon,
+  Circle as CircleIcon,
+  School as SchoolIcon,
+  Business as BusinessIcon,
+  Groups as GroupsIcon,
 } from "@mui/icons-material";
 
-// Room image generator based on room properties
-const getRoomImage = (room) => {
-  // Generate a dynamic gradient background based on the room type
-  let gradientColors;
-
-  switch (room.roomType?.toLowerCase()) {
-    case "classroom":
-      gradientColors = "linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%)";
-      break;
-    case "computer lab":
-      gradientColors = "linear-gradient(120deg, #d4fc79 0%, #96e6a1 100%)";
-      break;
-    case "meeting room":
-      gradientColors = "linear-gradient(120deg, #f6d365 0%, #fda085 100%)";
-      break;
-    case "lecture hall":
-      gradientColors = "linear-gradient(120deg, #f093fb 0%, #f5576c 100%)";
-      break;
-    default:
-      gradientColors = "linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%)";
-  }
-
-  // Create SVG dynamically
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="300" height="140" viewBox="0 0 300 140">
-      <defs>
-        <style>
-          .bg { fill: ${gradientColors ? "url(#gradient)" : "#f0f0f0"}; }
-          .room-icon { font-family: sans-serif; font-size: 36px; fill: rgba(255,255,255,0.8); }
-          .room-text { font-family: sans-serif; font-size: 14px; fill: rgba(255,255,255,0.9); }
-        </style>
-        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="${
-            gradientColors ? "#a1c4fd" : "#f0f0f0"
-          }" />
-          <stop offset="100%" stop-color="${
-            gradientColors ? "#c2e9fb" : "#d0d0d0"
-          }" />
-        </linearGradient>
-      </defs>
-      <rect class="bg" width="300" height="140" />
-      <text class="room-icon" x="150" y="65" text-anchor="middle">${
-        room.roomType ? room.roomType.charAt(0).toUpperCase() : "R"
-      }</text>
-      <text class="room-text" x="150" y="90" text-anchor="middle">${
-        room.name
-      }</text>
-      <text class="room-text" x="150" y="110" text-anchor="middle">Capacity: ${
-        room.capacity
-      }</text>
-    </svg>
-  `;
-
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-};
-
-// Map equipment to icons
+// Map equipment to icons with professional style
 const getEquipmentIcon = (equipment) => {
   const equipmentLower = equipment.toLowerCase();
-  if (equipmentLower.includes("computer") || equipmentLower.includes("pc"))
-    return <ComputerIcon fontSize="small" />;
-  if (equipmentLower.includes("projector") || equipmentLower.includes("video"))
-    return <VideocamIcon fontSize="small" />;
+  if (equipmentLower.includes("projecteur") || equipmentLower.includes("projector"))
+    return <VideocamIcon sx={{ fontSize: 16 }} />;
+  if (equipmentLower.includes("ordinateur") || equipmentLower.includes("computer"))
+    return <ComputerIcon sx={{ fontSize: 16 }} />;
   if (equipmentLower.includes("wifi") || equipmentLower.includes("internet"))
-    return <WifiIcon fontSize="small" />;
-  if (equipmentLower.includes("air") || equipmentLower.includes("climate"))
-    return <AcUnitIcon fontSize="small" />;
-  return <BlurOnIcon fontSize="small" />;
+    return <WifiIcon sx={{ fontSize: 16 }} />;
+  if (equipmentLower.includes("air") || equipmentLower.includes("climat"))
+    return <AcUnitIcon sx={{ fontSize: 16 }} />;
+  return <CircleIcon sx={{ fontSize: 16 }} />;
+};
+
+// Get room type icon and color
+const getRoomTypeConfig = (roomType) => {
+  switch (roomType?.toLowerCase()) {
+    case "classroom":
+    case "salle de cours":
+      return {
+        icon: <SchoolIcon />,
+        color: "#3730a3",
+        bgColor: "#3730a315",
+        label: "Salle de cours"
+      };
+    case "computer lab":
+    case "laboratoire":
+      return {
+        icon: <ComputerIcon />,
+        color: "#059669",
+        bgColor: "#05966915",
+        label: "Laboratoire"
+      };
+    case "meeting room":
+    case "salle de réunion":
+      return {
+        icon: <BusinessIcon />,
+        color: "#dc2626",
+        bgColor: "#dc262615",
+        label: "Salle de réunion"
+      };
+    case "lecture hall":
+    case "amphithéâtre":
+      return {
+        icon: <GroupsIcon />,
+        color: "#7c2d12",
+        bgColor: "#7c2d1215",
+        label: "Amphithéâtre"
+      };
+    default:
+      return {
+        icon: <MeetingRoomIcon />,
+        color: "#64748b",
+        bgColor: "#64748b15",
+        label: "Salle"
+      };
+  }
+};
+
+// Get capacity category
+const getCapacityCategory = (capacity) => {
+  if (capacity <= 20) return { label: "Petite", color: "#059669" };
+  if (capacity <= 50) return { label: "Moyenne", color: "#d97706" };
+  return { label: "Grande", color: "#dc2626" };
 };
 
 const RoomCard = ({ room, floorNumber }) => {
@@ -103,132 +98,217 @@ const RoomCard = ({ room, floorNumber }) => {
   };
 
   const isAvailable = room.status === "available";
-
-  // Calculate capacity utilization (random for demo)
-  const utilization = Math.floor(Math.random() * 100);
-  const utilizationColor =
-    utilization < 30 ? "success" : utilization < 70 ? "warning" : "error";
+  const roomTypeConfig = getRoomTypeConfig(room.roomType);
+  const capacityCategory = getCapacityCategory(room.capacity);
 
   return (
-    <Badge
-      color={isAvailable ? "success" : "error"}
-      badgeContent={
-        isAvailable ? (
-          <Tooltip title="Available">
-            <CheckIcon />
-          </Tooltip>
-        ) : (
-          <Tooltip title="Reserved">
-            <CloseIcon />
-          </Tooltip>
-        )
-      }
-      overlap="circular"
-      anchorOrigin={{ vertical: "top", horizontal: "right" }}
-    >
-      <Card
-        sx={{
-          height: "100%",
-          position: "relative",
-          overflow: "hidden",
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "5px",
-            backgroundColor: isAvailable ? "success.main" : "error.main",
-            zIndex: 1,
+    <Card
+      elevation={0}
+      sx={{
+        height: "100%",
+        borderRadius: 3,
+        border: "1px solid #e2e8f0",
+        background: "white",
+        overflow: "hidden",
+        position: "relative",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+          "& .room-header": {
+            background: isAvailable 
+              ? "linear-gradient(135deg, #059669 0%, #047857 100%)"
+              : "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
           },
-        }}
-      >
-        <CardActionArea onClick={handleClick} sx={{ height: "100%" }}>
-          <CardMedia
-            component="img"
-            height="140"
-            image={getRoomImage(room)}
-            alt={`Room ${room.name}`}
-          />
-          <CardContent>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 1,
-              }}
-            >
-              <Typography
-                variant="h6"
-                component="div"
-                sx={{
-                  fontWeight: 600,
-                  color: "primary.main",
+        },
+        transition: "all 0.2s ease",
+      }}
+    >
+      <CardActionArea onClick={handleClick} sx={{ height: "100%" }}>
+        {/* Header avec statut */}
+        <Box
+          className="room-header"
+          sx={{
+            height: 80,
+            background: isAvailable 
+              ? "linear-gradient(135deg, #3730a3 0%, #1e40af 100%)"
+              : "linear-gradient(135deg, #64748b 0%, #475569 100%)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            position: "relative",
+            transition: "all 0.2s ease",
+          }}
+        >
+          <Box sx={{ textAlign: "center" }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", mb: 0.5 }}>
+              {roomTypeConfig.icon}
+              <Typography 
+                variant="h5" 
+                sx={{ 
+                  fontWeight: 700,
+                  ml: 1,
+                  fontSize: "1.5rem",
                 }}
               >
                 {room.name}
               </Typography>
+            </Box>
+            <Chip
+              label={isAvailable ? "Disponible" : "Réservée"}
+              size="small"
+              sx={{
+                backgroundColor: "rgba(255,255,255,0.2)",
+                color: "white",
+                fontWeight: 600,
+                fontSize: "0.75rem",
+                backdropFilter: "blur(10px)",
+              }}
+            />
+          </Box>
+
+          {/* Indicateur de statut */}
+          <Box
+            sx={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              width: 12,
+              height: 12,
+              borderRadius: "50%",
+              backgroundColor: isAvailable ? "#10b981" : "#ef4444",
+              border: "2px solid white",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+            }}
+          />
+        </Box>
+
+        <CardContent sx={{ p: 3 }}>
+          {/* Informations principales */}
+          <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <PeopleIcon sx={{ fontSize: 20, color: "#64748b", mr: 1 }} />
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: "#1e293b",
+                  }}
+                >
+                  {room.capacity} places
+                </Typography>
+              </Box>
               <Chip
+                label={capacityCategory.label}
                 size="small"
-                color={isAvailable ? "success" : "error"}
-                label={isAvailable ? "Available" : "Reserved"}
-                sx={{ fontWeight: 500 }}
+                sx={{
+                  backgroundColor: `${capacityCategory.color}15`,
+                  color: capacityCategory.color,
+                  fontWeight: 500,
+                  fontSize: "0.75rem",
+                }}
               />
             </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-              <PeopleIcon
-                fontSize="small"
-                sx={{ mr: 1, color: "text.secondary" }}
-              />
-              <Typography variant="body2" sx={{ mr: 1.5 }}>
-                {room.capacity}
-              </Typography>
+            <Chip
+              icon={roomTypeConfig.icon}
+              label={roomTypeConfig.label}
+              sx={{
+                backgroundColor: roomTypeConfig.bgColor,
+                color: roomTypeConfig.color,
+                fontWeight: 500,
+                fontSize: "0.8rem",
+                "& .MuiChip-icon": {
+                  color: roomTypeConfig.color,
+                },
+              }}
+            />
+          </Box>
 
-              {room.roomType && (
-                <Chip
-                  label={room.roomType}
-                  size="small"
-                  color="primary"
-                  variant="outlined"
-                  sx={{ ml: "auto" }}
-                />
-              )}
-            </Box>
-
-            {/* Utilization indicator */}
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="caption" color="text.secondary">
-                Typical utilization
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={utilization}
-                color={utilizationColor}
-                sx={{ height: 6, borderRadius: 3 }}
-              />
-            </Box>
-
-            {room.equipments && room.equipments.length > 0 && (
-              <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
-                {room.equipments.map((equipment, index) => (
-                  <Tooltip key={index} title={equipment}>
+          {/* Équipements */}
+          {room.equipments && room.equipments.length > 0 && (
+            <>
+              <Divider sx={{ mb: 2, backgroundColor: "#e2e8f0" }} />
+              <Box>
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    color: "#64748b",
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    mb: 1,
+                    display: "block",
+                  }}
+                >
+                  Équipements
+                </Typography>
+                <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                  {room.equipments.slice(0, 4).map((equipment, index) => (
+                    <Tooltip key={index} title={equipment} arrow>
+                      <Chip
+                        icon={getEquipmentIcon(equipment)}
+                        label={equipment.length > 12 ? `${equipment.substring(0, 12)}...` : equipment}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          fontSize: "0.7rem",
+                          height: 24,
+                          borderColor: "#e2e8f0",
+                          color: "#64748b",
+                          "&:hover": {
+                            borderColor: "#3730a3",
+                            backgroundColor: "#3730a308",
+                          },
+                          "& .MuiChip-icon": {
+                            color: "#64748b",
+                          },
+                        }}
+                      />
+                    </Tooltip>
+                  ))}
+                  {room.equipments.length > 4 && (
                     <Chip
-                      icon={getEquipmentIcon(equipment)}
-                      label={equipment}
+                      label={`+${room.equipments.length - 4}`}
                       size="small"
-                      variant="outlined"
-                      sx={{ m: 0.3 }}
+                      sx={{
+                        fontSize: "0.7rem",
+                        height: 24,
+                        backgroundColor: "#f1f5f9",
+                        color: "#64748b",
+                        fontWeight: 600,
+                      }}
                     />
-                  </Tooltip>
-                ))}
-              </Stack>
-            )}
-          </CardContent>
-        </CardActionArea>
-      </Card>
-    </Badge>
+                  )}
+                </Stack>
+              </Box>
+            </>
+          )}
+
+          {/* Footer avec disponibilité */}
+          <Box 
+            sx={{ 
+              mt: 3,
+              pt: 2,
+              borderTop: "1px solid #f1f5f9",
+              textAlign: "center",
+            }}
+          >
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: isAvailable ? "#059669" : "#dc2626",
+                fontWeight: 600,
+                fontSize: "0.85rem",
+              }}
+            >
+              {isAvailable ? "Cliquez pour réserver" : "Actuellement occupée"}
+            </Typography>
+          </Box>
+        </CardContent>
+      </CardActionArea>
+    </Card>
   );
 };
 

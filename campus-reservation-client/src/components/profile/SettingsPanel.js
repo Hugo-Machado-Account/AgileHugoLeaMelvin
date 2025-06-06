@@ -2,9 +2,7 @@ import React from 'react';
 import {
   Box,
   Typography,
-  Card,
-  CardHeader,
-  CardContent,
+  Paper,
   List,
   ListItem,
   ListItemIcon,
@@ -12,25 +10,19 @@ import {
   Switch,
   Divider,
   Button,
-  Tooltip,
-  IconButton,
-  Chip,
-  Stack,
+  Alert,
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
   DarkMode as DarkModeIcon,
   Save as SaveIcon,
-  Check as CheckIcon,
-  Palette as PaletteIcon,
+  Settings as SettingsIcon,
+  Security as SecurityIcon,
 } from '@mui/icons-material';
-import { PROFILE_COLORS, COLOR_NAMES } from '../../utils/profileConstants';
-import ColorTestPanel from './ColorTestPanel';
 
 const SettingsPanel = ({ 
   profileData, 
   onProfileChange, 
-  onColorChange, 
   onSuccess 
 }) => {
   const handleSwitchChange = (name) => (event) => {
@@ -43,182 +35,194 @@ const SettingsPanel = ({
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>
-        Paramètres
+      <Typography 
+        variant="h5" 
+        sx={{ 
+          fontWeight: 600, 
+          color: "#1e293b", 
+          mb: 4 
+        }}
+      >
+        Paramètres du compte
       </Typography>
 
-      {/* Composant de test temporaire */}
-      <ColorTestPanel 
-        profileData={profileData}
-        onColorChange={onColorChange}
-      />
+      {/* Message d'information */}
+      <Alert 
+        severity="info" 
+        sx={{ 
+          mb: 4,
+          borderRadius: 2,
+          border: "1px solid #bfdbfe",
+        }}
+      >
+        Personnalisez votre expérience et gérez vos préférences de compte.
+      </Alert>
 
-      {/* Personnalisation */}
-      <Card sx={{ mb: 3 }}>
-        <CardHeader 
-          title="Personnalisation" 
-          avatar={<PaletteIcon />}
-        />
-        <CardContent>
-          <Typography variant="subtitle2" gutterBottom>
-            Couleur du profil
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Choisissez une couleur pour personnaliser votre profil. Le changement est immédiat.
-          </Typography>
-          
-          {/* Couleur actuelle */}
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="caption" color="text.secondary" gutterBottom display="block">
-              Couleur actuelle
+      {/* Notifications */}
+      <Paper 
+        elevation={0}
+        sx={{ 
+          mb: 4,
+          border: "1px solid #e2e8f0",
+          borderRadius: 2,
+        }}
+      >
+        <Box sx={{ p: 3, borderBottom: "1px solid #f1f5f9" }}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+            <NotificationsIcon sx={{ color: "#3730a3", mr: 2 }} />
+            <Typography variant="h6" sx={{ fontWeight: 600, color: "#1e293b" }}>
+              Notifications
             </Typography>
-            <Chip
-              icon={<CheckIcon />}
-              label={`${COLOR_NAMES[profileData.preferredColor] || 'Couleur personnalisée'} (${profileData.preferredColor})`}
+          </Box>
+          <Typography variant="body2" sx={{ color: "#64748b" }}>
+            Gérez vos préférences de notifications
+          </Typography>
+        </Box>
+        
+        <List sx={{ p: 0 }}>
+          <ListItem sx={{ py: 2 }}>
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              <NotificationsIcon sx={{ color: "#3730a3" }} />
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                <Typography variant="body1" sx={{ fontWeight: 500, color: "#1e293b" }}>
+                  Notifications par email
+                </Typography>
+              }
+              secondary={
+                <Typography variant="body2" sx={{ color: "#64748b" }}>
+                  Recevoir des emails pour les confirmations et rappels de réservation
+                </Typography>
+              }
+            />
+            <Switch
+              edge="end"
+              checked={profileData?.notifications || false}
+              onChange={handleSwitchChange("notifications")}
               sx={{
-                bgcolor: profileData.preferredColor,
-                color: 'white',
-                fontWeight: 'bold',
-                '& .MuiChip-icon': {
-                  color: 'white',
+                "& .MuiSwitch-switchBase.Mui-checked": {
+                  color: "#3730a3",
+                },
+                "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                  backgroundColor: "#3730a3",
                 },
               }}
             />
-          </Box>
+          </ListItem>
+        </List>
+      </Paper>
 
-          {/* Sélecteur de couleurs */}
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="caption" color="text.secondary" gutterBottom display="block">
-              Sélectionner une nouvelle couleur
-            </Typography>
-            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-              {PROFILE_COLORS.map((color) => (
-                <Tooltip 
-                  title={`${COLOR_NAMES[color]} (${color})`} 
-                  key={color}
-                  arrow
-                >
-                  <IconButton
-                    sx={{
-                      bgcolor: color,
-                      width: 48,
-                      height: 48,
-                      border: '3px solid',
-                      borderColor: profileData.preferredColor === color 
-                        ? 'white' 
-                        : 'transparent',
-                      boxShadow: profileData.preferredColor === color 
-                        ? `0 0 0 2px ${color}` 
-                        : 'none',
-                      "&:hover": {
-                        bgcolor: color,
-                        opacity: 0.8,
-                        transform: 'scale(1.1)',
-                      },
-                      transition: 'all 0.2s ease-in-out',
-                      position: 'relative',
-                    }}
-                    onClick={() => onColorChange(color)}
-                  >
-                    {profileData.preferredColor === color && (
-                      <CheckIcon 
-                        sx={{ 
-                          color: 'white', 
-                          fontSize: 24,
-                          fontWeight: 'bold',
-                          textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-                        }} 
-                      />
-                    )}
-                  </IconButton>
-                </Tooltip>
-              ))}
-            </Stack>
-          </Box>
-
-          {/* Aperçu */}
-          <Box 
-            sx={{ 
-              p: 2, 
-              borderRadius: 1, 
-              border: `2px solid ${profileData.preferredColor}`,
-              bgcolor: 'background.default',
-              mb: 3,
-              background: `linear-gradient(135deg, ${profileData.preferredColor}11 0%, ${profileData.preferredColor}22 100%)`,
-            }}
-          >
-            <Typography variant="caption" color="text.secondary" gutterBottom display="block">
-              Aperçu de la couleur sélectionnée
-            </Typography>
-            <Typography 
-              variant="body2" 
-              sx={{ color: profileData.preferredColor, fontWeight: 'bold' }}
-            >
-              Cette couleur ({COLOR_NAMES[profileData.preferredColor] || 'Personnalisée'}) sera utilisée pour les bordures, accents et éléments de votre profil
+      {/* Thème et apparence */}
+      <Paper 
+        elevation={0}
+        sx={{ 
+          mb: 4,
+          border: "1px solid #e2e8f0",
+          borderRadius: 2,
+        }}
+      >
+        <Box sx={{ p: 3, borderBottom: "1px solid #f1f5f9" }}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+            <DarkModeIcon sx={{ color: "#3730a3", mr: 2 }} />
+            <Typography variant="h6" sx={{ fontWeight: 600, color: "#1e293b" }}>
+              Thème et apparence
             </Typography>
           </Box>
-        </CardContent>
-      </Card>
+          <Typography variant="body2" sx={{ color: "#64748b" }}>
+            Personnalisez l'apparence de l'interface
+          </Typography>
+        </Box>
+        
+        <List sx={{ p: 0 }}>
+          <ListItem sx={{ py: 2 }}>
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              <DarkModeIcon sx={{ color: "#3730a3" }} />
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                <Typography variant="body1" sx={{ fontWeight: 500, color: "#1e293b" }}>
+                  Mode sombre
+                </Typography>
+              }
+              secondary={
+                <Typography variant="body2" sx={{ color: "#64748b" }}>
+                  Utiliser le thème sombre pour l'interface (bientôt disponible)
+                </Typography>
+              }
+            />
+            <Switch
+              edge="end"
+              checked={false}
+              disabled
+              sx={{
+                "& .MuiSwitch-switchBase.Mui-checked": {
+                  color: "#3730a3",
+                },
+                "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                  backgroundColor: "#3730a3",
+                },
+              }}
+            />
+          </ListItem>
+        </List>
+      </Paper>
 
-      {/* Notifications */}
-      <Card sx={{ mb: 3 }}>
-        <CardHeader title="Notifications" />
-        <CardContent>
-          <List>
-            <ListItem>
-              <ListItemIcon>
-                <NotificationsIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary="Notifications par email"
-                secondary="Recevoir des emails pour les confirmations et rappels"
-              />
-              <Switch
-                edge="end"
-                checked={profileData.notifications}
-                onChange={handleSwitchChange("notifications")}
-                color="primary"
-              />
-            </ListItem>
-            <Divider variant="inset" component="li" />
-            <ListItem>
-              <ListItemIcon>
-                <DarkModeIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary="Mode sombre"
-                secondary="Utiliser le thème sombre pour l'interface"
-              />
-              <Switch
-                edge="end"
-                checked={profileData.darkMode}
-                onChange={handleSwitchChange("darkMode")}
-                color="primary"
-              />
-            </ListItem>
-          </List>
-        </CardContent>
-      </Card>
+      {/* Sécurité */}
+      <Paper 
+        elevation={0}
+        sx={{ 
+          mb: 4,
+          border: "1px solid #e2e8f0",
+          borderRadius: 2,
+        }}
+      >
+        <Box sx={{ p: 3, borderBottom: "1px solid #f1f5f9" }}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+            <SecurityIcon sx={{ color: "#dc2626", mr: 2 }} />
+            <Typography variant="h6" sx={{ fontWeight: 600, color: "#1e293b" }}>
+              Sécurité
+            </Typography>
+          </Box>
+          <Typography variant="body2" sx={{ color: "#64748b" }}>
+            Paramètres de sécurité et confidentialité
+          </Typography>
+        </Box>
+        
+        <Box sx={{ p: 3 }}>
+          <Alert severity="warning" sx={{ borderRadius: 2, mb: 2 }}>
+            Pour des raisons de sécurité, les paramètres avancés sont gérés par l'administration.
+          </Alert>
+          <Typography variant="body2" sx={{ color: "#64748b" }}>
+            Si vous souhaitez modifier vos paramètres de sécurité, veuillez contacter l'administrateur système.
+          </Typography>
+        </Box>
+      </Paper>
 
-      {/* Bouton de sauvegarde général */}
-      <Box sx={{ textAlign: 'center' }}>
+      {/* Bouton de sauvegarde */}
+      <Box sx={{ textAlign: "center" }}>
         <Button
           variant="contained"
           size="large"
           onClick={handleSaveSettings}
           startIcon={<SaveIcon />}
           sx={{
-            bgcolor: profileData.preferredColor,
-            '&:hover': {
-              bgcolor: profileData.preferredColor,
-              opacity: 0.8,
-              transform: 'translateY(-2px)',
-              boxShadow: `0 6px 20px ${profileData.preferredColor}44`,
+            backgroundColor: "#3730a3",
+            py: 1.5,
+            px: 4,
+            borderRadius: 2,
+            textTransform: "none",
+            fontWeight: 600,
+            fontSize: "1rem",
+            "&:hover": {
+              backgroundColor: "#1e40af",
+              transform: "translateY(-1px)",
+              boxShadow: "0 10px 25px rgba(55, 48, 163, 0.3)",
             },
-            transition: 'all 0.3s ease-in-out',
+            transition: "all 0.2s ease",
           }}
         >
-          Enregistrer tous les paramètres
+          Enregistrer les paramètres
         </Button>
       </Box>
     </Box>

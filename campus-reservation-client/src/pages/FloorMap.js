@@ -15,13 +15,18 @@ import {
   Tooltip,
   Menu,
   MenuItem,
+  Chip,
+  Fade,
+  LinearProgress,
 } from "@mui/material";
 import {
   Home as HomeIcon,
-  Room as RoomIcon,
+  Business as BusinessIcon,
   FilterList as FilterListIcon,
   NavigateBefore as NavigateBeforeIcon,
   NavigateNext as NavigateNextIcon,
+  LocationOn as LocationOnIcon,
+  Tune as TuneIcon,
 } from "@mui/icons-material";
 import { floorService } from "../services/apiService";
 import RoomCard from "../components/floor/RoomCard";
@@ -103,159 +108,358 @@ const FloorMap = () => {
   const hasPreviousFloor = currentFloorIndex > 0;
   const hasNextFloor = currentFloorIndex < allFloors.length - 1;
 
+  // Statistiques des salles
+  const roomStats = {
+    total: rooms.length,
+    available: rooms.filter(r => r.status === "available").length,
+    reserved: rooms.filter(r => r.status === "reserved").length,
+  };
+
+  const filterOptions = [
+    { key: "all", label: "Toutes les salles", count: roomStats.total },
+    { key: "available", label: "Disponibles", count: roomStats.available },
+    { key: "reserved", label: "Réservées", count: roomStats.reserved },
+    { key: "small", label: "Petites (≤ 20)", count: rooms.filter(r => r.capacity <= 20).length },
+    { key: "medium", label: "Moyennes (21-50)", count: rooms.filter(r => r.capacity > 20 && r.capacity <= 50).length },
+    { key: "large", label: "Grandes (> 50)", count: rooms.filter(r => r.capacity > 50).length },
+  ];
+
   if (loading) {
     return (
-      <Container sx={{ py: 5, textAlign: "center" }}>
-        <CircularProgress />
-        <Typography variant="body1" sx={{ mt: 2 }}>
-          Loading floor {floorNumber}...
-        </Typography>
-      </Container>
+      <Box sx={{ backgroundColor: "#f8fafc", minHeight: "100vh", py: 4 }}>
+        <Container>
+          <Box sx={{ textAlign: "center", mb: 4 }}>
+            <CircularProgress sx={{ color: "#3730a3" }} />
+            <Typography variant="h6" sx={{ mt: 2, color: "#64748b" }}>
+              Chargement de l'étage {floorNumber}...
+            </Typography>
+          </Box>
+          <LinearProgress sx={{ borderRadius: 2, height: 6 }} />
+        </Container>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <Container sx={{ py: 5 }}>
-        <Alert severity="error">{error}</Alert>
-        <Button
-          variant="outlined"
-          sx={{ mt: 2 }}
-          startIcon={<HomeIcon />}
-          onClick={() => navigate("/dashboard")}
-        >
-          Return to Dashboard
-        </Button>
-      </Container>
+      <Box sx={{ backgroundColor: "#f8fafc", minHeight: "100vh", py: 4 }}>
+        <Container>
+          <Alert 
+            severity="error"
+            sx={{
+              borderRadius: 3,
+              border: "1px solid #fca5a5",
+              mb: 3,
+            }}
+          >
+            {error}
+          </Alert>
+          <Button
+            variant="contained"
+            startIcon={<HomeIcon />}
+            onClick={() => navigate("/dashboard")}
+            sx={{
+              backgroundColor: "#3730a3",
+              "&:hover": { backgroundColor: "#1e40af" },
+              borderRadius: 2,
+              textTransform: "none",
+              fontWeight: 600,
+            }}
+          >
+            Retour au tableau de bord
+          </Button>
+        </Container>
+      </Box>
     );
   }
 
   if (!floor) {
     return (
-      <Container sx={{ py: 5 }}>
-        <Alert severity="warning">Floor {floorNumber} does not exist.</Alert>
-        <Button
-          variant="outlined"
-          sx={{ mt: 2 }}
-          startIcon={<HomeIcon />}
-          onClick={() => navigate("/dashboard")}
-        >
-          Return to Dashboard
-        </Button>
-      </Container>
+      <Box sx={{ backgroundColor: "#f8fafc", minHeight: "100vh", py: 4 }}>
+        <Container>
+          <Alert 
+            severity="warning"
+            sx={{
+              borderRadius: 3,
+              border: "1px solid #fbbf24",
+              mb: 3,
+            }}
+          >
+            L'étage {floorNumber} n'existe pas.
+          </Alert>
+          <Button
+            variant="contained"
+            startIcon={<HomeIcon />}
+            onClick={() => navigate("/dashboard")}
+            sx={{
+              backgroundColor: "#3730a3",
+              "&:hover": { backgroundColor: "#1e40af" },
+              borderRadius: 2,
+              textTransform: "none",
+              fontWeight: 600,
+            }}
+          >
+            Retour au tableau de bord
+          </Button>
+        </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Breadcrumbs */}
-      <Breadcrumbs sx={{ mb: 3 }}>
-        <Link
-          color="inherit"
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            navigate("/dashboard");
-          }}
-          sx={{ display: "flex", alignItems: "center" }}
-        >
-          <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
-          Home
-        </Link>
-        <Typography
-          color="text.primary"
-          sx={{ display: "flex", alignItems: "center" }}
-        >
-          <RoomIcon sx={{ mr: 0.5 }} fontSize="inherit" />
-          Floor {floorNumber}
-        </Typography>
-      </Breadcrumbs>
+    <Box sx={{ backgroundColor: "#f8fafc", minHeight: "100vh", py: 4 }}>
+      <Container maxWidth="lg">
+        {/* Breadcrumbs */}
+        <Breadcrumbs sx={{ mb: 4 }}>
+          <Link
+            color="inherit"
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("/dashboard");
+            }}
+            sx={{ 
+              display: "flex", 
+              alignItems: "center",
+              color: "#64748b",
+              textDecoration: "none",
+              fontWeight: 500,
+              "&:hover": {
+                color: "#3730a3",
+              },
+            }}
+          >
+            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+            Tableau de bord
+          </Link>
+          <Typography
+            sx={{ 
+              display: "flex", 
+              alignItems: "center",
+              color: "#1e293b",
+              fontWeight: 600,
+            }}
+          >
+            <BusinessIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+            Étage {floorNumber}
+          </Typography>
+        </Breadcrumbs>
 
-      <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
-        <Box
+        {/* Header */}
+        <Paper
+          elevation={0}
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 3,
+            p: 4,
+            borderRadius: 3,
+            border: "1px solid #e2e8f0",
+            background: "white",
+            mb: 4,
           }}
         >
-          <Box>
-            <Typography variant="h4" component="h1" gutterBottom>
-              {floor.name}
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Floor {floorNumber} - {rooms.length} available rooms
-            </Typography>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: 3,
+                  background: "linear-gradient(135deg, #3730a3 0%, #1e40af 100%)",
+                  color: "white",
+                  mr: 3,
+                }}
+              >
+                <LocationOnIcon sx={{ fontSize: 32 }} />
+              </Box>
+              <Box>
+                <Typography 
+                  variant="h3" 
+                  sx={{ 
+                    fontWeight: 700,
+                    color: "#1e293b",
+                    letterSpacing: "-0.02em",
+                    mb: 0.5,
+                  }}
+                >
+                  {floor.name}
+                </Typography>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    color: "#64748b",
+                    fontWeight: 400,
+                  }}
+                >
+                  Étage {floorNumber} • {rooms.length} salles disponibles
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Navigation et filtre */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Tooltip title="Étage précédent">
+                <IconButton
+                  disabled={!hasPreviousFloor}
+                  onClick={() => navigateToFloor(allFloors[currentFloorIndex - 1].floorNumber)}
+                  sx={{
+                    backgroundColor: hasPreviousFloor ? "#f1f5f9" : "transparent",
+                    color: hasPreviousFloor ? "#3730a3" : "#94a3b8",
+                    "&:hover": {
+                      backgroundColor: hasPreviousFloor ? "#e2e8f0" : "transparent",
+                    },
+                  }}
+                >
+                  <NavigateBeforeIcon />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Filtrer les salles">
+                <IconButton 
+                  onClick={handleFilterOpen}
+                  sx={{
+                    backgroundColor: "#f1f5f9",
+                    color: "#3730a3",
+                    "&:hover": {
+                      backgroundColor: "#e2e8f0",
+                    },
+                  }}
+                >
+                  <TuneIcon />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Étage suivant">
+                <IconButton
+                  disabled={!hasNextFloor}
+                  onClick={() => navigateToFloor(allFloors[currentFloorIndex + 1].floorNumber)}
+                  sx={{
+                    backgroundColor: hasNextFloor ? "#f1f5f9" : "transparent",
+                    color: hasNextFloor ? "#3730a3" : "#94a3b8",
+                    "&:hover": {
+                      backgroundColor: hasNextFloor ? "#e2e8f0" : "transparent",
+                    },
+                  }}
+                >
+                  <NavigateNextIcon />
+                </IconButton>
+              </Tooltip>
+            </Box>
           </Box>
 
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <IconButton
-              disabled={!hasPreviousFloor}
-              onClick={() =>
-                navigateToFloor(allFloors[currentFloorIndex - 1].floorNumber)
-              }
-              aria-label="previous floor"
-            >
-              <NavigateBeforeIcon />
-            </IconButton>
-
-            <Tooltip title="Filter rooms">
-              <IconButton onClick={handleFilterOpen} aria-label="filter">
-                <FilterListIcon />
-              </IconButton>
-            </Tooltip>
-            <Menu
-              anchorEl={filterAnchorEl}
-              open={Boolean(filterAnchorEl)}
-              onClose={handleFilterClose}
-            >
-              <MenuItem onClick={() => handleFilterChange("all")}>
-                All rooms
+          {/* Menu filtre */}
+          <Menu
+            anchorEl={filterAnchorEl}
+            open={Boolean(filterAnchorEl)}
+            onClose={handleFilterClose}
+            PaperProps={{
+              sx: {
+                borderRadius: 2,
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+                mt: 1,
+              },
+            }}
+          >
+            {filterOptions.map((option) => (
+              <MenuItem 
+                key={option.key}
+                onClick={() => handleFilterChange(option.key)}
+                sx={{
+                  py: 1.5,
+                  px: 3,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  "&:hover": {
+                    backgroundColor: "#f1f5f9",
+                  },
+                }}
+              >
+                <Typography sx={{ fontWeight: 500, color: "#1e293b" }}>
+                  {option.label}
+                </Typography>
+                <Chip
+                  label={option.count}
+                  size="small"
+                  sx={{
+                    backgroundColor: filter === option.key ? "#3730a3" : "#e2e8f0",
+                    color: filter === option.key ? "white" : "#64748b",
+                    fontWeight: 600,
+                    fontSize: "0.75rem",
+                  }}
+                />
               </MenuItem>
-              <MenuItem onClick={() => handleFilterChange("available")}>
-                Available rooms
-              </MenuItem>
-              <MenuItem onClick={() => handleFilterChange("reserved")}>
-                Reserved rooms
-              </MenuItem>
-              <MenuItem onClick={() => handleFilterChange("small")}>
-                Small capacity (≤ 20)
-              </MenuItem>
-              <MenuItem onClick={() => handleFilterChange("medium")}>
-                Medium capacity (21-50)
-              </MenuItem>
-              <MenuItem onClick={() => handleFilterChange("large")}>
-                Large capacity ({">"} 50)
-              </MenuItem>
-            </Menu>
-
-            <IconButton
-              disabled={!hasNextFloor}
-              onClick={() =>
-                navigateToFloor(allFloors[currentFloorIndex + 1].floorNumber)
-              }
-              aria-label="next floor"
-            >
-              <NavigateNextIcon />
-            </IconButton>
-          </Box>
-        </Box>
-
-        {/* Rooms grid */}
-        {filteredRooms.length === 0 ? (
-          <Alert severity="info">No rooms match the selected criteria.</Alert>
-        ) : (
-          <Grid container spacing={3}>
-            {filteredRooms.map((room) => (
-              <Grid item xs={12} sm={6} md={4} key={room.id}>
-                <RoomCard room={room} floorNumber={floorNumber} />
-              </Grid>
             ))}
+          </Menu>
+
+          {/* Statistiques rapides */}
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4}>
+              <Box sx={{ textAlign: "center", p: 2, borderRadius: 2, backgroundColor: "#f8fafc" }}>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: "#3730a3" }}>
+                  {roomStats.total}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                  Total des salles
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Box sx={{ textAlign: "center", p: 2, borderRadius: 2, backgroundColor: "#f0fdf4" }}>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: "#059669" }}>
+                  {roomStats.available}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#064e3b", fontWeight: 500 }}>
+                  Disponibles
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Box sx={{ textAlign: "center", p: 2, borderRadius: 2, backgroundColor: "#fef2f2" }}>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: "#dc2626" }}>
+                  {roomStats.reserved}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#7f1d1d", fontWeight: 500 }}>
+                  Réservées
+                </Typography>
+              </Box>
+            </Grid>
           </Grid>
-        )}
-      </Paper>
-    </Container>
+        </Paper>
+
+        {/* Grille des salles */}
+        <Fade in={!loading} timeout={600}>
+          <Box>
+            {filteredRooms.length === 0 ? (
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 6,
+                  textAlign: "center",
+                  borderRadius: 3,
+                  border: "1px solid #e2e8f0",
+                  background: "white",
+                }}
+              >
+                <BusinessIcon sx={{ fontSize: 64, color: "#94a3b8", mb: 2 }} />
+                <Typography variant="h5" sx={{ color: "#64748b", mb: 1, fontWeight: 600 }}>
+                  Aucune salle trouvée
+                </Typography>
+                <Typography variant="body1" sx={{ color: "#94a3b8" }}>
+                  Aucune salle ne correspond aux critères sélectionnés.
+                </Typography>
+              </Paper>
+            ) : (
+              <Grid container spacing={3}>
+                {filteredRooms.map((room) => (
+                  <Grid item xs={12} sm={6} lg={4} key={room.id}>
+                    <RoomCard room={room} floorNumber={floorNumber} />
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </Box>
+        </Fade>
+      </Container>
+    </Box>
   );
 };
 

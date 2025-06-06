@@ -18,6 +18,7 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
+  Chip,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -26,7 +27,8 @@ import {
   AccountCircle,
   ExitToApp,
   AdminPanelSettings,
-  School,
+  Business as BusinessIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -61,18 +63,28 @@ const Navbar = () => {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar 
+      position="static" 
+      elevation={0}
+      sx={{
+        backgroundColor: "#1e3a8a",
+        borderBottom: "1px solid rgba(255,255,255,0.1)",
+      }}
+    >
       <Container maxWidth="xl">
-        <Toolbar disableGutters>
+        <Toolbar disableGutters sx={{ minHeight: 64 }}>
           {/* Menu Burger Mobile */}
-          <Box sx={{ flexGrow: 0, display: { xs: "flex", md: "none" } }}>
+          <Box sx={{ flexGrow: 2, display: { xs: "flex", md: "none" } }}>
             <IconButton
               size="large"
               aria-label="menu"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
               onClick={handleToggleDrawer}
-              color="inherit"
+              sx={{ 
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                },
+              }}
             >
               <MenuIcon />
             </IconButton>
@@ -80,80 +92,218 @@ const Navbar = () => {
               anchor="left"
               open={drawerOpen}
               onClose={handleToggleDrawer}
+              PaperProps={{
+                sx: {
+                  width: 280,
+                  backgroundColor: "#f8fafc",
+                },
+              }}
             >
-              <Box sx={{ width: 250 }} role="presentation">
-                <List>
-                  <ListItem button onClick={() => handleNavigate("/")}>
+              <Box sx={{ width: 280 }} role="presentation">
+                <Box sx={{ 
+                  p: 5, 
+                  backgroundColor: "#1e3a8a", 
+                  color: "white",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Menu
+                  </Typography>
+                  <IconButton 
+                    onClick={handleToggleDrawer}
+                    sx={{ color: "white" }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
+                <List sx={{ p: 0 }}>
+                  <ListItem 
+                    button 
+                    onClick={() => handleNavigate("/")}
+                    sx={{
+                      py: 2,
+                      "&:hover": {
+                        backgroundColor: "#e2e8f0",
+                      },
+                    }}
+                  >
                     <ListItemIcon>
-                      <School />
+                      <BusinessIcon sx={{ color: "#3730a3" }} />
                     </ListItemIcon>
-                    <ListItemText primary="Accueil" />
+                    <ListItemText 
+                      primary="Accueil" 
+                      primaryTypographyProps={{
+                        fontWeight: 500,
+                        color: "#1e293b",
+                      }}
+                    />
                   </ListItem>
                   {isAuthenticated && (
                     <>
                       <ListItem
                         button
                         onClick={() => handleNavigate("/dashboard")}
+                        sx={{
+                          py: 2,
+                          "&:hover": {
+                            backgroundColor: "#e2e8f0",
+                          },
+                        }}
                       >
                         <ListItemIcon>
-                          <Dashboard />
+                          <Dashboard sx={{ color: "#3730a3" }} />
                         </ListItemIcon>
-                        <ListItemText primary="Tableau de bord" />
+                        <ListItemText 
+                          primary="Tableau de bord"
+                          primaryTypographyProps={{
+                            fontWeight: 500,
+                            color: "#1e293b",
+                          }}
+                        />
                       </ListItem>
                       <ListItem
                         button
                         onClick={() => handleNavigate("/my-reservations")}
+                        sx={{
+                          py: 2,
+                          "&:hover": {
+                            backgroundColor: "#e2e8f0",
+                          },
+                        }}
                       >
                         <ListItemIcon>
-                          <Event />
+                          <Event sx={{ color: "#3730a3" }} />
                         </ListItemIcon>
-                        <ListItemText primary="Mes réservations" />
+                        <ListItemText 
+                          primary="Mes réservations"
+                          primaryTypographyProps={{
+                            fontWeight: 500,
+                            color: "#1e293b",
+                          }}
+                        />
                       </ListItem>
                       {user?.role === "admin" && (
                         <ListItem
                           button
                           onClick={() => handleNavigate("/admin")}
+                          sx={{
+                            py: 2,
+                            "&:hover": {
+                              backgroundColor: "#e2e8f0",
+                            },
+                          }}
                         >
                           <ListItemIcon>
-                            <AdminPanelSettings />
+                            <AdminPanelSettings sx={{ color: "#dc2626" }} />
                           </ListItemIcon>
-                          <ListItemText primary="Administration" />
+                          <ListItemText 
+                            primary="Administration"
+                            primaryTypographyProps={{
+                              fontWeight: 500,
+                              color: "#1e293b",
+                            }}
+                          />
+                          <Chip 
+                            label="Admin" 
+                            size="small" 
+                            sx={{ 
+                              backgroundColor: "#dc2626",
+                              color: "white",
+                              fontSize: "0.75rem",
+                            }}
+                          />
                         </ListItem>
                       )}
-                      <Divider />
+                      <Divider sx={{ my: 1, backgroundColor: "#e2e8f0" }} />
                       <ListItem
                         button
                         onClick={() => handleNavigate("/profile")}
+                        sx={{
+                          py: 2,
+                          "&:hover": {
+                            backgroundColor: "#e2e8f0",
+                          },
+                        }}
                       >
                         <ListItemIcon>
-                          <AccountCircle />
+                          <AccountCircle sx={{ color: "#3730a3" }} />
                         </ListItemIcon>
-                        <ListItemText primary="Profil" />
+                        <ListItemText 
+                          primary="Profil"
+                          primaryTypographyProps={{
+                            fontWeight: 500,
+                            color: "#1e293b",
+                          }}
+                        />
                       </ListItem>
-                      <ListItem button onClick={handleLogout}>
+                      <ListItem 
+                        button 
+                        onClick={handleLogout}
+                        sx={{
+                          py: 2,
+                          "&:hover": {
+                            backgroundColor: "#fef2f2",
+                          },
+                        }}
+                      >
                         <ListItemIcon>
-                          <ExitToApp />
+                          <ExitToApp sx={{ color: "#dc2626" }} />
                         </ListItemIcon>
-                        <ListItemText primary="Déconnexion" />
+                        <ListItemText 
+                          primary="Déconnexion"
+                          primaryTypographyProps={{
+                            fontWeight: 500,
+                            color: "#dc2626",
+                          }}
+                        />
                       </ListItem>
                     </>
                   )}
                   {!isAuthenticated && (
                     <>
-                      <ListItem button onClick={() => handleNavigate("/login")}>
+                      <ListItem 
+                        button 
+                        onClick={() => handleNavigate("/login")}
+                        sx={{
+                          py: 2,
+                          "&:hover": {
+                            backgroundColor: "#e2e8f0",
+                          },
+                        }}
+                      >
                         <ListItemIcon>
-                          <AccountCircle />
+                          <AccountCircle sx={{ color: "#3730a3" }} />
                         </ListItemIcon>
-                        <ListItemText primary="Connexion" />
+                        <ListItemText 
+                          primary="Connexion"
+                          primaryTypographyProps={{
+                            fontWeight: 500,
+                            color: "#1e293b",
+                          }}
+                        />
                       </ListItem>
                       <ListItem
                         button
                         onClick={() => handleNavigate("/register")}
+                        sx={{
+                          py: 2,
+                          "&:hover": {
+                            backgroundColor: "#e2e8f0",
+                          },
+                        }}
                       >
                         <ListItemIcon>
-                          <AccountCircle />
+                          <AccountCircle sx={{ color: "#3730a3" }} />
                         </ListItemIcon>
-                        <ListItemText primary="Inscription" />
+                        <ListItemText 
+                          primary="Inscription"
+                          primaryTypographyProps={{
+                            fontWeight: 500,
+                            color: "#1e293b",
+                          }}
+                        />
                       </ListItem>
                     </>
                   )}
@@ -163,45 +313,92 @@ const Navbar = () => {
           </Box>
 
           {/* Logo */}
-          <Typography
-            variant="h6"
-            noWrap
+          <Box
             component={RouterLink}
             to="/"
             sx={{
-              mr: 2,
-              display: { xs: "flex" },
-              fontFamily: "monospace",
-              fontWeight: 700,
-              letterSpacing: ".3rem",
-              color: "inherit",
+              mr: 4,
+              display: "flex",
+              alignItems: "center",
               textDecoration: "none",
+              color: "inherit",
               flexGrow: { xs: 1, md: 0 },
             }}
           >
-            CAMPUS
-          </Typography>
+            <BusinessIcon sx={{ fontSize: 32, mr: 1, color: "#60a5fa" }} />
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: 700,
+                letterSpacing: "-0.02em",
+                color: "white",
+                fontSize: { xs: "1.25rem", md: "1.5rem" },
+              }}
+            >
+              CAMPUS
+            </Typography>
+          </Box>
 
           {/* Desktop Menu */}
-          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
+          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, ml: 4 }}>
             {isAuthenticated && (
               <>
                 <Button
                   onClick={() => handleNavigate("/dashboard")}
-                  sx={{ my: 2, color: "white", display: "block" }}
+                  sx={{ 
+                    mx: 1,
+                    py: 1,
+                    px: 2,
+                    color: "rgba(255,255,255,0.9)", 
+                    textTransform: "none",
+                    fontWeight: 500,
+                    fontSize: "0.95rem",
+                    borderRadius: 2,
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                      color: "white",
+                    },
+                  }}
                 >
                   Tableau de bord
                 </Button>
                 <Button
                   onClick={() => handleNavigate("/my-reservations")}
-                  sx={{ my: 2, color: "white", display: "block" }}
+                  sx={{ 
+                    mx: 1,
+                    py: 1,
+                    px: 2,
+                    color: "rgba(255,255,255,0.9)", 
+                    textTransform: "none",
+                    fontWeight: 500,
+                    fontSize: "0.95rem",
+                    borderRadius: 2,
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                      color: "white",
+                    },
+                  }}
                 >
                   Mes réservations
                 </Button>
                 {user?.role === "admin" && (
                   <Button
                     onClick={() => handleNavigate("/admin")}
-                    sx={{ my: 2, color: "white", display: "block" }}
+                    sx={{ 
+                      mx: 1,
+                      py: 1,
+                      px: 2,
+                      color: "#fca5a5", 
+                      textTransform: "none",
+                      fontWeight: 600,
+                      fontSize: "0.95rem",
+                      borderRadius: 2,
+                      border: "1px solid rgba(252, 165, 165, 0.3)",
+                      "&:hover": {
+                        backgroundColor: "rgba(252, 165, 165, 0.1)",
+                        color: "#fca5a5",
+                      },
+                    }}
                   >
                     Administration
                   </Button>
@@ -214,19 +411,41 @@ const Navbar = () => {
           <Box sx={{ flexGrow: 0 }}>
             {isAuthenticated ? (
               <>
-                <Tooltip title="Ouvrir les paramètres">
-                  <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                <Tooltip title="Menu utilisateur">
+                  <IconButton 
+                    onClick={handleOpenUserMenu} 
+                    sx={{ 
+                      p: 0,
+                      "&:hover": {
+                        transform: "scale(1.05)",
+                      },
+                      transition: "all 0.2s ease",
+                    }}
+                  >
                     <Avatar
                       alt={user?.firstName}
-                      src={
-                        user?.profilePicture ||
-                        "/static/images/avatar/default.jpg"
-                      }
-                    />
+                      src={user?.profilePicture}
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        border: "2px solid rgba(255,255,255,0.3)",
+                        backgroundColor: "#60a5fa",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {user?.firstName?.charAt(0) || "U"}
+                    </Avatar>
                   </IconButton>
                 </Tooltip>
                 <Menu
-                  sx={{ mt: "45px" }}
+                  sx={{ 
+                    mt: "45px",
+                    "& .MuiPaper-root": {
+                      borderRadius: 2,
+                      boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+                      border: "1px solid #e2e8f0",
+                    },
+                  }}
                   id="menu-appbar"
                   anchorEl={anchorElUser}
                   anchorOrigin={{
@@ -241,31 +460,83 @@ const Navbar = () => {
                   open={Boolean(anchorElUser)}
                   onClose={handleCloseUserMenu}
                 >
-                  <MenuItem onClick={() => handleNavigate("/profile")}>
+                  <Box sx={{ px: 2, py: 1, borderBottom: "1px solid #e2e8f0" }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#1e293b" }}>
+                      {user?.firstName} {user?.lastName}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#64748b" }}>
+                      {user?.email}
+                    </Typography>
+                  </Box>
+                  <MenuItem 
+                    onClick={() => handleNavigate("/profile")}
+                    sx={{
+                      py: 1.5,
+                      "&:hover": {
+                        backgroundColor: "#f1f5f9",
+                      },
+                    }}
+                  >
                     <ListItemIcon>
-                      <AccountCircle fontSize="small" />
+                      <AccountCircle fontSize="small" sx={{ color: "#3730a3" }} />
                     </ListItemIcon>
-                    <Typography textAlign="center">Profil</Typography>
+                    <Typography sx={{ fontWeight: 500, color: "#1e293b" }}>
+                      Profil
+                    </Typography>
                   </MenuItem>
-                  <MenuItem onClick={handleLogout}>
+                  <MenuItem 
+                    onClick={handleLogout}
+                    sx={{
+                      py: 1.5,
+                      "&:hover": {
+                        backgroundColor: "#fef2f2",
+                      },
+                    }}
+                  >
                     <ListItemIcon>
-                      <ExitToApp fontSize="small" />
+                      <ExitToApp fontSize="small" sx={{ color: "#dc2626" }} />
                     </ListItemIcon>
-                    <Typography textAlign="center">Déconnexion</Typography>
+                    <Typography sx={{ fontWeight: 500, color: "#dc2626" }}>
+                      Déconnexion
+                    </Typography>
                   </MenuItem>
                 </Menu>
               </>
             ) : (
-              <Box sx={{ display: { xs: "none", md: "flex" } }}>
+              <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1 }}>
                 <Button
                   onClick={() => handleNavigate("/login")}
-                  sx={{ color: "white" }}
+                  sx={{
+                    color: "white",
+                    textTransform: "none",
+                    fontWeight: 500,
+                    px: 3,
+                    py: 1,
+                    borderRadius: 2,
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                    },
+                  }}
                 >
                   Connexion
                 </Button>
                 <Button
                   onClick={() => handleNavigate("/register")}
-                  sx={{ color: "white" }}
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "white",
+                    color: "#1e3a8a",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    px: 3,
+                    py: 1,
+                    borderRadius: 2,
+                    "&:hover": {
+                      backgroundColor: "#f8fafc",
+                      transform: "translateY(-1px)",
+                    },
+                    transition: "all 0.2s ease",
+                  }}
                 >
                   Inscription
                 </Button>
